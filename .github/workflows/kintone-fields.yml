@@ -22,4 +22,4 @@ jobs:
           KINTONE_TOKEN_402: ${{ secrets.KINTONE_TOKEN_402 }}
           KINTONE_TOKEN_507: ${{ secrets.KINTONE_TOKEN_507 }}
           KINTONE_TOKEN_491: ${{ secrets.KINTONE_TOKEN_491 }}
-        run: python scripts/kintone_fields.py
+        run: python .github/workflows/scripts/kintone_fields.py
