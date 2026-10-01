@@ -1,8 +1,9 @@
-"""kintoneのアプリ402・507・491について、項目（フィールド）の一覧だけを出力する。
+"""kintoneのアプリ402・507・491・341について、項目（フィールド）の一覧だけを出力する。
 
 ・レコードの中身（書名・著者・担当者など）は一切出力しない。
   公開リポジトリでは Actions の実行ログを誰でも見られるため。
 ・出力するのは「項目コード／項目名／項目の種類」と、アプリのレコード件数だけ。
+  関連レコード一覧の項目は、つながっている先のアプリ番号も出す。
 ・アプリ管理権限の無いトークンでは項目名が取れないため、その場合は
   レコード1件から「項目コードと種類」だけを取り出す（値は捨てる）。
 """
@@ -14,7 +15,7 @@ import urllib.request
 import urllib.error
 
 DOMAIN = os.environ.get("KINTONE_DOMAIN", "").strip().replace("https://", "").rstrip("/")
-APPS = [("402", "連載情報・PV累計"), ("507", "連載分類"), ("491", "単日PV")]
+APPS = [("402", "連載情報・PV累計"), ("507", "連載分類"), ("491", "単日PV"), ("341", "記事")]
 
 
 def get(path, params, token):
@@ -44,7 +45,13 @@ def show_app(app, name):
     try:
         j = get("/k/v1/app/form/fields.json", {"app": app}, token)
         for code, p in j["properties"].items():
-            rows.append((code, p.get("label", ""), p.get("type", "")))
+            typ = p.get("type", "")
+            if typ == "REFERENCE_TABLE":
+                # 関連レコード一覧：つながっている先のアプリ番号と、結びつけている項目を出す
+                rt = p.get("referenceTable", {})
+                cond = rt.get("condition", {})
+                typ = f"REFERENCE_TABLE → アプリ{rt.get('relatedApp', {}).get('app', '?')}（この項目「{cond.get('field', '')}」＝相手の項目「{cond.get('relatedField', '')}」）"
+            rows.append((code, p.get("label", ""), typ))
         print("取得方法：フォーム設定（項目名あり）")
     except urllib.error.HTTPError:
         # 2) レコード1件から項目コードと種類だけ（値は使わない）
