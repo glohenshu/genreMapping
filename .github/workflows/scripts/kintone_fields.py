@@ -48,9 +48,11 @@ def show_app(app, name):
             typ = p.get("type", "")
             if typ == "REFERENCE_TABLE":
                 # 関連レコード一覧：つながっている先のアプリ番号と、結びつけている項目を出す
-                rt = p.get("referenceTable", {})
-                cond = rt.get("condition", {})
-                typ = f"REFERENCE_TABLE → アプリ{rt.get('relatedApp', {}).get('app', '?')}（この項目「{cond.get('field', '')}」＝相手の項目「{cond.get('relatedField', '')}」）"
+                # （設定が読み取れない項目は中身が空で返るため、空でも止まらないようにする）
+                rt = p.get("referenceTable") or {}
+                cond = rt.get("condition") or {}
+                rel = (rt.get("relatedApp") or {}).get("app") or "?（読み取れず）"
+                typ = f"REFERENCE_TABLE → アプリ{rel}（この項目「{cond.get('field', '')}」＝相手の項目「{cond.get('relatedField', '')}」）"
             rows.append((code, p.get("label", ""), typ))
         print("取得方法：フォーム設定（項目名あり）")
     except urllib.error.HTTPError:
