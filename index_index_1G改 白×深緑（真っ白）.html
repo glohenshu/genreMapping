@@ -350,7 +350,7 @@
     .card-cover { width: 72px; height: 106px; margin: 2px 14px 8px 0; }
   }
 
-  /* ===== 案1の色違い：1G 白×深緑（金は細い線だけ）（1Dが土台） ===== */
+  /* ===== 案1の色違い：1G 白×深緑（金は細い線だけ）（1Dが土台・白地に修正） ===== */
   :root {
     --bg: #f7f3ea; --bg-card: #ffffff; --bg-card-hover: #fffaf0; --navy: #1b2238;
     --gold: #94733a; --gold-light: #6f5322; --gold-mid: #b08c46;
@@ -411,6 +411,13 @@
   .card-live { background: #9a7838; }
   .card:hover { border-color: var(--gold-mid); }
   .cta-card { background: #f1f4ef; }
+
+  /* --- 1G改：地を真っ白に（生成りに見える要素を外す） --- */
+  :root { --bg: #ffffff; --bg-card-hover: #f7f9f7; }
+  body { background: #ffffff; }
+  header { background: rgba(255,255,255,0.97); }
+  #map { background: none; }
+  .cta-card { background: #f4f7f4; }
 
   /* おすすめ作品診断の枠：診断ページができるまで非表示（表示に戻すときは、この1行を消す） */
   .cta-card { display: none !important; }
