@@ -1,0 +1,58 @@
+# 毎月5日 9:00（日本時間）に、kintoneから作品データを作り直して公開する。
+# 「Actions」→「毎月の作品データ更新」→「Run workflow」で、いつでも手動で動かせます。
+name: 毎月の作品データ更新
+
+on:
+  schedule:
+    - cron: "0 0 5 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: kintoneから作品データを作る
+        env:
+          KINTONE_DOMAIN: ${{ secrets.KINTONE_DOMAIN }}
+          KINTONE_TOKEN_402: ${{ secrets.KINTONE_TOKEN_402 }}
+          KINTONE_TOKEN_507: ${{ secrets.KINTONE_TOKEN_507 }}
+          KINTONE_TOKEN_341: ${{ secrets.KINTONE_TOKEN_341 }}
+          KINTONE_TOKEN_491: ${{ secrets.KINTONE_TOKEN_491 }}
+        run: python scripts/build_data.py
+
+      - name: 変わったデータを保存する
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "データに変更はありませんでした"
+          else
+            git commit -m "作品データを更新（$(TZ=Asia/Tokyo date +%Y-%m-%d)）"
+            git push
+          fi
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+      - id: deploy
+        uses: actions/deploy-pages@v4
