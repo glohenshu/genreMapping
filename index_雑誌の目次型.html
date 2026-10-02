@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ジャンルから探す｜ゴールドライフオンライン</title>
+<meta name="description" content="ゴールドライフオンライン（GLO）の作品を、ジャンルと小さなジャンルから探せます。">
+<meta property="og:title" content="ジャンルから探す｜ゴールドライフオンライン">
+<meta property="og:description" content="GLOの作品をジャンルから探せます。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ゴールドライフオンライン">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Shippori+Mincho:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  /* 案3：雑誌の目次型（白地・文字が主役・装飾は最小限） */
+  :root {
+    --paper: #ffffff;
+    --paper-2: #f6f4ef;
+    --ink: #1d1d1f;
+    --ink-sub: #5a5a5e;
+    --ink-faint: #8a8a8e;
+    --line: #e4e0d6;
+    --accent: #8a6a32;      /* 番号・細い線（くすんだ金） */
+    --link: #1f3a68;        /* 押せる文字（紺） */
+    --font-heading: 'Shippori Mincho', serif;
+    --font-body: 'Noto Sans JP', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { font-family: var(--font-body); background: var(--paper); color: var(--ink); font-size: 16px; line-height: 1.8; }
+  a { color: var(--link); }
+  button { font-family: inherit; }
+
+  header { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,0.96); border-bottom: 1px solid var(--line); backdrop-filter: blur(8px); }
+  .header-inner { max-width: 720px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 12px; }
+  .header-logo { height: 18px; display: block; }
+  .header-sub { font-size: 12px; color: var(--ink-sub); letter-spacing: 1px; }
+  .header-home { margin-left: auto; font-size: 13px; text-decoration: none; }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 0 20px 64px; }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* トップ */
+  .masthead { padding: 40px 0 28px; border-bottom: 2px solid var(--ink); margin-bottom: 8px; }
+  .eyebrow { font-size: 11px; letter-spacing: 4px; color: var(--accent); margin-bottom: 8px; }
+  h1 { font-family: var(--font-heading); font-size: 30px; font-weight: 600; letter-spacing: 2px; line-height: 1.5; }
+  .lead { font-size: 15px; color: var(--ink-sub); margin-top: 12px; }
+  .stats { font-size: 13px; color: var(--ink-faint); margin-top: 6px; }
+
+  .sort-seg { display: inline-flex; align-items: center; gap: 2px; margin: 16px 0 4px; border: 1px solid var(--line); border-radius: 6px; padding: 2px; }
+  .sort-seg[hidden] { display: none; }
+  .sort-seg .sort-lab { font-size: 12px; color: var(--ink-faint); padding: 0 8px; }
+  .sort-seg button { border: 0; background: transparent; color: var(--ink-sub); font-size: 13px; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+  .sort-seg button.on { background: var(--ink); color: #fff; }
+
+  .sec-label { font-size: 12px; letter-spacing: 3px; color: var(--accent); margin: 28px 0 4px; }
+
+  /* 目次 */
+  .toc { list-style: none; }
+  .toc > li { border-bottom: 1px solid var(--line); }
+  .toc-row { width: 100%; display: flex; align-items: baseline; gap: 14px; padding: 16px 2px; background: none; border: 0; text-align: left; cursor: pointer; color: var(--ink); }
+  .toc-no { font-family: var(--font-heading); font-size: 15px; color: var(--accent); width: 1.6em; flex-shrink: 0; }
+  .toc-name { font-family: var(--font-heading); font-size: 20px; font-weight: 600; letter-spacing: 1px; }
+  .toc-count { margin-left: auto; font-size: 13px; color: var(--ink-faint); white-space: nowrap; }
+  .toc-mark { width: 1em; text-align: center; color: var(--ink-faint); font-size: 14px; transition: transform 0.2s; }
+  .toc > li.open .toc-mark { transform: rotate(90deg); }
+  .toc-body { display: none; padding: 0 0 18px calc(1.6em + 16px); }
+  .toc > li.open .toc-body { display: block; }
+  .toc-desc { font-size: 14px; color: var(--ink-sub); line-height: 1.9; margin-bottom: 10px; }
+  .toc-subs { list-style: none; }
+  .toc-subs li { border-top: 1px dotted var(--line); }
+  .toc-subs a { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; font-size: 15px; text-decoration: none; }
+  .toc-subs a small { color: var(--ink-faint); font-size: 13px; white-space: nowrap; }
+  .toc-all { display: inline-block; margin-top: 10px; font-size: 14px; font-weight: 500; text-decoration: none; }
+  .toc-all::after, .more-link::after { content: ' →'; }
+
+  .cta { margin-top: 40px; padding: 22px 20px; background: var(--paper-2); border-radius: 4px; }
+  .cta p { font-size: 14px; color: var(--ink-sub); }
+  .cta a { display: inline-block; margin-top: 6px; font-weight: 500; font-size: 15px; }
+
+  /* ジャンルの作品一覧 */
+  .btn-back { margin-top: 20px; background: none; border: 0; font-size: 14px; color: var(--link); cursor: pointer; padding: 6px 0; }
+  .list-head { padding: 14px 0 20px; border-bottom: 2px solid var(--ink); }
+  .list-no { font-family: var(--font-heading); font-size: 14px; color: var(--accent); letter-spacing: 2px; }
+  .list-title { font-family: var(--font-heading); font-size: 28px; font-weight: 600; letter-spacing: 2px; line-height: 1.5; }
+  .list-desc { font-size: 15px; color: var(--ink-sub); margin-top: 8px; }
+  .list-count { font-size: 13px; color: var(--ink-faint); margin-top: 6px; }
+  .sub-index { list-style: none; margin: 18px 0 8px; padding: 14px 16px; background: var(--paper-2); border-radius: 4px; }
+  .sub-index li { font-size: 14px; line-height: 2.1; }
+  .sub-index a { text-decoration: none; }
+  .sub-index small { color: var(--ink-faint); margin-left: 6px; }
+
+  .sub-sec { margin-top: 32px; scroll-margin-top: 64px; }
+  .sub-title { font-family: var(--font-heading); font-size: 20px; font-weight: 600; letter-spacing: 1px; padding-bottom: 8px; border-bottom: 1px solid var(--ink); }
+  .sub-title small { font-family: var(--font-body); font-size: 13px; font-weight: 400; color: var(--ink-faint); margin-left: 8px; }
+  .entries { list-style: none; }
+  .entry { display: flex; gap: 14px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+  .entry-no { font-family: var(--font-heading); font-size: 15px; color: var(--accent); width: 1.6em; flex-shrink: 0; line-height: 1.6; }
+  .entry-cover { width: 64px; height: 94px; flex-shrink: 0; background: var(--paper-2); border: 1px solid var(--line); display: block; }
+  .entry-cover img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .entry-body { flex: 1; min-width: 0; }
+  .entry-title { display: block; font-family: var(--font-heading); font-size: 18px; font-weight: 600; line-height: 1.6; color: var(--ink); text-decoration: none; }
+  .entry-title:hover { text-decoration: underline; }
+  .entry-meta { font-size: 13px; color: var(--ink-sub); margin-top: 2px; }
+  .entry-live { display: inline-block; font-size: 11px; color: var(--accent); border: 1px solid var(--accent); padding: 0 6px; margin-left: 8px; line-height: 1.6; vertical-align: 1px; }
+  .entry-sum { font-size: 14px; color: var(--ink-sub); line-height: 1.85; margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .entry-links { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 14px; }
+  .entry-links a { text-decoration: none; font-weight: 500; }
+  .entry-links a::after { content: ' →'; }
+  .btn-more { display: block; width: 100%; margin-top: 12px; padding: 12px; background: var(--paper); border: 1px solid var(--line); border-radius: 4px; font-size: 14px; color: var(--link); cursor: pointer; }
+
+  .footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-faint); text-align: center; }
+  .footer a { color: var(--ink-faint); text-decoration: none; }
+  .to-top { position: fixed; right: 14px; bottom: 18px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: var(--ink-sub); font-size: 18px; cursor: pointer; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .to-top.show { display: block; }
+  button:focus-visible, a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+
+  @media (max-width: 480px) {
+    .header-inner { padding: 10px 16px; }
+    .header-sub { display: none; }
+    .container { padding: 0 16px 56px; }
+    .masthead { padding: 28px 0 22px; }
+    h1 { font-size: 26px; }
+    .toc-name { font-size: 18px; }
+    .toc-body { padding-left: 0; }
+    .list-title { font-size: 24px; }
+    .entry { gap: 12px; }
+    .entry-no { width: 1.3em; }
+    .entry-cover { width: 56px; height: 82px; }
+    .entry-title { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <img class="header-logo" src="https://renaissance-media.jp/common/glo/images/logo.svg" alt="GLO">
+    <span class="header-sub">ジャンルから探す</span>
+    <a class="header-home" href="https://renaissance-media.jp/" target="_blank" rel="noopener">GLOトップへ →</a>
+  </div>
+</header>
+
+<div class="container">
+
+  <div id="top" class="screen active">
+    <div class="masthead">
+      <p class="eyebrow">GOLD LIFE ONLINE</p>
+      <h1>ジャンルから探す</h1>
+      <p class="lead">気になるジャンルを開くと、その中の小さなジャンルが並びます。</p>
+      <p class="stats" id="stats"></p>
+      <div class="sort-seg" id="sortTop" hidden></div>
+    </div>
+
+    <p class="sec-label">目次</p>
+    <ol class="toc" id="toc"></ol>
+
+    <div class="cta">
+      <p>何を読むか決められない方へ</p>
+      <a href="glo-shindan.html">5つの質問で、おすすめ作品を診断する →</a>
+    </div>
+
+    <div class="footer"><a href="https://renaissance-media.jp/" target="_blank" rel="noopener">© ゴールドライフオンライン</a></div>
+  </div>
+
+  <div id="list" class="screen">
+    <button class="btn-back" onclick="goBack()">← 目次に戻る</button>
+    <div class="list-head">
+      <p class="list-no" id="listNo"></p>
+      <h2 class="list-title" id="listTitle"></h2>
+      <p class="list-desc" id="listDesc"></p>
+      <p class="list-count" id="listCount"></p>
+      <div class="sort-seg" id="sortList" hidden></div>
+    </div>
+    <ol class="sub-index" id="subIndex"></ol>
+    <div id="listSubs"></div>
+    <button class="btn-back" onclick="goBack()">← 目次に戻る</button>
+    <div class="footer"><a href="https://renaissance-media.jp/" target="_blank" rel="noopener">© ゴールドライフオンライン</a></div>
+  </div>
+
+</div>
+<button class="to-top" id="toTop" aria-label="ページの上へ">↑</button>
+
+<script src="data/genres.js"></script>
+<script src="data/covers_manual.js"></script>
+<script src="data/covers_auto.js"></script>
+<script>
+const DATA = window.GLO_DATA || { genres: [], hasRecent: false };
+const GENRES = DATA.genres;
+const COVERS = Object.assign({}, window.COVERS_AUTO || {}, window.COVERS_MANUAL || {});
+const SITE = 'https://renaissance-media.jp';
+const FIRST_SHOW = 10;
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const no = i => String(i + 1).padStart(2, '0');
+const catUrl = w => SITE + '/category/' + encodeURIComponent(w.c);
+const firstUrl = w => w.f ? SITE + '/articles/-/' + w.f : '';
+const COVER_BASE = 'https://renaissance-media.ismcdn.jp/mwimgs/';
+function coverUrl(w) {
+  const h = COVERS[w.c];
+  if (!h) return '';
+  if (/^https?:/.test(h)) return h;
+  return COVER_BASE + h[0] + '/' + h[1] + '/240w/img_' + h;
+}
+const total = GENRES.reduce((a, g) => a + g.count, 0);
+const subTotal = GENRES.reduce((a, g) => a + g.subs.length, 0);
+document.getElementById('stats').textContent = '全' + total.toLocaleString() + '作品／' + GENRES.length + 'ジャンル／' + subTotal + 'の小さなジャンル';
+
+/* 並び順 */
+let sortKey = 'pv';
+const SORT_LABEL = { pv: 'よく読まれている順（累計）', pr: 'いま読まれている順（' + (DATA.recentLabel || '直近3か月') + '）' };
+function applySort() { GENRES.forEach(g => g.subs.forEach(s => s.works.sort((a, b) => (b[sortKey] || 0) - (a[sortKey] || 0)))); }
+function paintSort() {
+  document.querySelectorAll('.sort-seg').forEach(el => {
+    el.hidden = !DATA.hasRecent;
+    el.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.k === sortKey));
+  });
+}
+document.querySelectorAll('.sort-seg').forEach(el => {
+  el.innerHTML = '<span class="sort-lab">並び順</span><button data-k="pv">累計</button><button data-k="pr">直近3か月</button>';
+  el.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b || b.dataset.k === sortKey) return;
+    sortKey = b.dataset.k; applySort(); paintSort();
+    if (curList) showList(curList, null, true);
+  });
+});
+applySort(); paintSort();
+
+/* 目次 */
+const toc = document.getElementById('toc');
+toc.innerHTML = GENRES.map((g, i) =>
+  '<li data-i="' + i + '"><button class="toc-row" aria-expanded="false"><span class="toc-no">' + no(i) + '</span><span class="toc-name">' + esc(g.name) + '</span><span class="toc-count">' + g.count + '作品</span><span class="toc-mark">›</span></button>' +
+  '<div class="toc-body"><p class="toc-desc">' + esc(g.desc) + '</p><ul class="toc-subs">' +
+  g.subs.map(s => '<li><a href="#" data-s="' + s.code + '">' + esc(s.name) + '<small>' + s.works.length + '作品</small></a></li>').join('') +
+  '</ul><a class="toc-all" href="#">「' + esc(g.name) + '」の作品をすべて見る</a></div></li>').join('');
+toc.addEventListener('click', e => {
+  const li = e.target.closest('li[data-i]');
+  if (!li) return;
+  const g = GENRES[+li.dataset.i];
+  if (e.target.closest('.toc-row')) {
+    const open = !li.classList.contains('open');
+    li.classList.toggle('open', open);
+    li.querySelector('.toc-row').setAttribute('aria-expanded', open);
+    return;
+  }
+  const a = e.target.closest('a');
+  if (!a) return;
+  e.preventDefault();
+  showList(g, a.dataset.s);
+});
+
+/* 作品 */
+function entry(w, i) {
+  const u = coverUrl(w);
+  const cover = u ? '<a class="entry-cover" href="' + catUrl(w) + '" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true"><img src="' + esc(u) + '" alt="" loading="lazy" decoding="async" onerror="this.parentNode.remove()"></a>' : '';
+  return '<li class="entry"><span class="entry-no">' + (i + 1) + '</span>' + cover + '<div class="entry-body">' +
+    '<a class="entry-title" href="' + catUrl(w) + '" target="_blank" rel="noopener">' + esc(w.t) + '</a>' +
+    '<p class="entry-meta">' + esc(w.a) + (w.l ? '<span class="entry-live">連載中</span>' : '') + '</p>' +
+    (w.s ? '<p class="entry-sum">' + esc(w.s) + '</p>' : '') +
+    '<p class="entry-links">' + (w.f ? '<a href="' + firstUrl(w) + '" target="_blank" rel="noopener">第1回から読む</a>' : '') + '<a href="' + catUrl(w) + '" target="_blank" rel="noopener">記事一覧</a></p>' +
+    '</div></li>';
+}
+
+let curList = null;
+function showList(g, jumpSub, keepScroll) {
+  curList = g;
+  const gi = GENRES.indexOf(g);
+  document.getElementById('listNo').textContent = no(gi);
+  document.getElementById('listTitle').textContent = g.name;
+  document.getElementById('listDesc').textContent = g.desc;
+  document.getElementById('listCount').textContent = g.count.toLocaleString() + '作品（' + SORT_LABEL[sortKey] + '）';
+  document.getElementById('subIndex').innerHTML = g.subs.map(s => '<li><a href="#sub-' + s.code + '">' + esc(s.name) + '</a><small>' + s.works.length + '</small></li>').join('');
+  const box = document.getElementById('listSubs');
+  box.innerHTML = g.subs.map(s => {
+    const rest = s.works.length - FIRST_SHOW;
+    return '<section class="sub-sec" id="sub-' + s.code + '"><h3 class="sub-title">' + esc(s.name) + '<small>' + s.works.length + '作品</small></h3>' +
+      '<ol class="entries">' + s.works.slice(0, FIRST_SHOW).map(entry).join('') + '</ol>' +
+      (rest > 0 ? '<button class="btn-more" data-s="' + s.code + '">残り' + rest + '作品を表示</button>' : '') + '</section>';
+  }).join('');
+  box.onclick = e => {
+    const b = e.target.closest('.btn-more');
+    if (!b) return;
+    const s = g.subs.find(x => x.code === b.dataset.s);
+    b.previousElementSibling.insertAdjacentHTML('beforeend', s.works.slice(FIRST_SHOW).map((w, i) => entry(w, i + FIRST_SHOW)).join(''));
+    b.remove();
+  };
+  if (keepScroll) return;
+  document.getElementById('top').classList.remove('active');
+  document.getElementById('list').classList.add('active');
+  if (jumpSub) requestAnimationFrame(() => { const el = document.getElementById('sub-' + jumpSub); if (el) el.scrollIntoView(); });
+  else window.scrollTo(0, 0);
+}
+function goBack() {
+  const gi = GENRES.indexOf(curList);
+  curList = null;
+  document.getElementById('list').classList.remove('active');
+  document.getElementById('top').classList.add('active');
+  // 見ていたジャンルを開いた状態で、目次のその位置に戻る
+  const li = toc.querySelector('li[data-i="' + gi + '"]');
+  if (li) {
+    li.classList.add('open'); li.querySelector('.toc-row').setAttribute('aria-expanded', true);
+    li.scrollIntoView(); window.scrollBy(0, -60);
+  } else window.scrollTo(0, 0);
+}
+
+const toTop = document.getElementById('toTop');
+window.addEventListener('scroll', () => toTop.classList.toggle('show', window.scrollY > 800), { passive: true });
+toTop.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+</script>
+</body>
+</html>
