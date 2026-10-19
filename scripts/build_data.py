@@ -225,9 +225,10 @@ def main():
     r491 = [r for r in r491 if r_start <= (ymd(r.get("date")) or dt.date.min) <= r_end]
 
     # ---- 507：連載コード → 小分類コード（企画・その他など、設定に無い小分類は対象外）
-    cls, unknown_sub = {}, 0
+    cls, unknown_sub, registered = {}, 0, set()
     for r in r507:
         key = nfkc(r.get("作品キー"))
+        registered.add(key)
         v = nfkc(r.get("小分類_主"))
         m = re.match(r"(S\d{2})", v)
         code = m.group(1) if m else subname2code.get(v) or next((c for n, c in subname2code.items() if n and n in v), None)
@@ -270,19 +271,28 @@ def main():
         groups.setdefault(title_key(r.get("書籍タイトル")), []).append(r)
 
     works_by_sub = {}
-    stats = {"402": len(r402), "作品": 0, "分類なし": 0, "まとめた登録": 0}
+    stats = {"402": len(r402), "作品": 0, "分類待ち": 0, "対象外": 0, "準備中": 0, "まとめた登録": 0}
     special_values = {}
+    pending = []   # 507に登録が無い作品（毎月の分類作業で分類する）
     for key, rs in groups.items():
         for r in rs:
             sv = nfkc(r.get("特殊")) or "（空）"
             special_values[sv] = special_values.get(sv, 0) + 1
         cand = [r for r in rs if r["_c"] in cls]
         if not cand:
-            stats["分類なし"] += 1
+            if any(r["_c"] in registered for r in rs):
+                stats["対象外"] += 1   # 企画・お知らせ・要確認など、わざと載せない小分類
+            else:
+                stats["分類待ち"] += 1
+                pending.append(max(rs, key=lambda r: r["_pv"]))
             continue
         normal = [r for r in cand if "通常" in nfkc(r.get("特殊"))]
         rep = max(normal or cand, key=lambda r: r["_pv"])
         f = first.get(rep["_c"]) or next((first[r["_c"]] for r in sorted(rs, key=lambda r: -r["_pv"]) if r["_c"] in first), None)
+        # 連載準備中で第1回がまだ公開されていない作品は、公開された月の更新から載せる
+        if not f and "準備中" in nfkc(rep.get("連載ステータス")):
+            stats["準備中"] += 1
+            continue
         w = {
             "t": base_title(rep.get("書籍タイトル")) if rep not in normal else nfkc(rep.get("書籍タイトル")),
             "a": nfkc(rep.get("著者名")),
@@ -369,12 +379,23 @@ def main():
              "毎月の自動更新で、人が確認したほうがよいものをまとめています。", "",
              "## 件数", "",
              f"- 作品数：{stats['作品']}（ピックアップ版などをまとめた登録 {stats['まとめた登録']}件）",
-             f"- 402にあって分類が無い・対象外の作品：{stats['分類なし']}",
+             f"- 分類待ち（507に登録が無い）作品：{stats['分類待ち']}（一覧は下の「分類待ちの作品」）",
+             f"- 507で対象外の小分類（企画・お知らせ・要確認など）の作品：{stats['対象外']}",
+             f"- 連載準備中で第1回が未公開のため、まだ載せていない作品：{stats['準備中']}",
              f"- 直近3か月の期間：{r_label}（単日PVがあった連載 {len(recent)}）",
              f"- 出版実績URLが入っている作品：{url_filled} / {stats['作品']}",
              f"- 書影（新しく集めた分）：記事 {got['記事の書籍情報欄']}件／出版実績 {got['出版実績URL']}件／取れず {got['取れず']}件", "",
              "## 「特殊（連載分類）」の値と件数", ""]
     lines += [f"- {k}：{v}" for k, v in sorted(special_values.items(), key=lambda x: -x[1])]
+    lines += ["", "## 分類待ちの作品", "",
+              "507に登録が無いため、ページに載っていない作品です。毎月の分類作業（`docs/classification.md`）で分類してください。", ""]
+    if pending:
+        cell = lambda s: nfkc(s).replace("|", "｜")
+        lines += ["| 作品名 | 著者 | 連載コード | 連載ステータス |", "|---|---|---|---|"]
+        lines += [f"| {cell(r.get('書籍タイトル'))} | {cell(r.get('著者名'))} | {r['_c']} | {cell(r.get('連載ステータス'))} |"
+                  for r in sorted(pending, key=lambda r: r["_c"])]
+    else:
+        lines.append("ありません。")
     lines += ["", "## 書影の確認が必要な作品", ""]
     if check_cover:
         lines += ["| 作品名 | 著者 | 連載コード | 状況 |", "|---|---|---|---|"]
@@ -384,7 +405,8 @@ def main():
     lines += ["", "書影を直すときは `data/covers_manual.js` に「連載コード: 画像ファイル名またはURL」を書き足してください（自動の結果より優先されます）。", ""]
     with open(os.path.join(DATA, "check.md"), "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
-    print(f"作品データを書き出しました：{stats['作品']}作品／{len(genres)}ジャンル")
+    print(f"作品データを書き出しました：{stats['作品']}作品／{len(genres)}ジャンル"
+          f"（分類待ち {stats['分類待ち']}件、準備中で載せない {stats['準備中']}件）")
 
 
 if __name__ == "__main__":
