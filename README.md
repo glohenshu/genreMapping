@@ -2,7 +2,7 @@
 
 GLOの連載を、ジャンル → 小ジャンル → 作品の地図と一覧で探せるページです。GitHub Pages で公開しています。
 
-デザインは雑誌の目次型で確定し、`index.html`（https://glohenshu.github.io/genreMapping/ ）が本筋です。以前のURL `index_zine.html` を開くと、このページへ移ります。ほかのデザイン案（最初の版・1E・1G・1G2）は `_bk/` に保管しており、今後は更新しません。
+デザインは雑誌の目次型で確定し、`index.html`（https://glohenshu.github.io/genreMapping/ ）が本筋です。以前のURL `index_zine.html` を開くと、このページへ移ります。ほかのデザイン案（最初の版・1E・1G・1G2）は `_bk/` に保管しており、今後は更新しません（サイトには公開していません）。
 
 ## デザインの方針（決まったこと）
 
@@ -49,7 +49,7 @@ GLOの連載を、ジャンル → 小ジャンル → 作品の地図と一覧�
 
 ## 公開するファイル
 
-ページとして公開するのは、`scripts/collect_site.sh` で集めたファイルだけです（`index.html`・`index_zine.html`・`data/` の作品データ4つ・`_bk/`）。確認リスト（`data/check.md`）や設定・手順書・スクリプトは、サイトの URL からは見えません。ただしリポジトリは公開なので、GitHub 上では誰でも読めます。公開するファイルを増やすときは `scripts/collect_site.sh` に書き足してください。
+ページとして公開するのは、`scripts/collect_site.sh` で集めたファイルだけです（`index.html`・`index_zine.html`・`data/` の作品データ4つ）。確認リスト（`data/check.md`）、設定・手順書・スクリプト、`_bk/` の旧案は、サイトの URL からは見えません。ただしリポジトリは公開なので、GitHub 上では誰でも読めます。公開するファイルを増やすときは `scripts/collect_site.sh` に書き足してください。
 
 ## 注意
 
