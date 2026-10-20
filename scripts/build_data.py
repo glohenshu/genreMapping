@@ -337,13 +337,11 @@ def main():
         w = {
             "t": base_title(rep.get("書籍タイトル")) if rep not in normal else nfkc(rep.get("書籍タイトル")),
             "a": nfkc(rep.get("著者名")),
-            "g": nfkc(rep.get("メインジャンル")),
             "s": nfkc(rep.get("内容紹介")),
             "c": rep["_c"],
             "f": f[2] if f else "",
             "l": 1 if "連載中" in nfkc(rep.get("連載ステータス")) else 0,
             "pv": max(r["_pv"] for r in rs),
-            "pr": max(r["_pr"] for r in rs),
             "_url": next((nfkc(r.get("出版実績URL")) for r in [rep] + rs if nfkc(r.get("出版実績URL"))), ""),
         }
         # 主と副の両方の小分類に、同じ作品を並べる（読者には主・副の区別を見せない）
@@ -393,7 +391,7 @@ def main():
 
     # ---- PVの実数は公開しない：並び順だけが分かる「順位の点数」に置き換える（大きいほど上）
     n = len(all_w)
-    for key in ("pv", "pr"):
+    for key in ("pv",):
         order = sorted((w for w in all_w if w[key] > 0), key=lambda w: -w[key])
         score, prev_v = n, None
         for i, w in enumerate(order):
@@ -422,7 +420,8 @@ def main():
             # 表示しない小分類の作品も、作品数には含める
             genres.append({"id": g["id"], "name": g["name"], "desc": g["desc"], "hue": g["hue"],
                            "count": len(all_codes), "subs": subs})
-    data = {"updated": today.isoformat(), "hasRecent": bool(recent), "recentLabel": r_label,
+    # ページで使う項目だけを書く（メインジャンル・直近3か月の順位は使わないので出さない）
+    data = {"updated": today.isoformat(),
             "total": stats["作品"], "genres": genres}
     write_js(os.path.join(DATA, "genres.js"), "GLO_DATA", data, "作品データ（毎月自動で作り直す。手で直さない）")
     write_js(os.path.join(DATA, "covers_auto.js"), "COVERS_AUTO", auto, "新しい連載の書影（毎月の自動処理が追記する）")

@@ -195,7 +195,7 @@
 <script src="data/covers_manual.js"></script>
 <script src="data/covers_auto.js"></script>
 <script>
-const DATA = window.GLO_DATA || { genres: [], hasRecent: false };
+const DATA = window.GLO_DATA || { genres: [] };
 // kintone の表示設定で「表示しない」にした小分類は出さない（小分類がすべて隠れたジャンルも出さない）
 const HIDDEN = new Set(window.GLO_HIDDEN || []);
 const GENRES = DATA.genres.map(g => Object.assign({}, g, { subs: g.subs.filter(s => !HIDDEN.has(s.code)) })).filter(g => g.subs.length);
