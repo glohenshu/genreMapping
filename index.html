@@ -254,6 +254,8 @@ function coverUrl(w) {
 
 // 並び順は「よく読まれている順（累計）」だけ
 GENRES.forEach(g => g.subs.forEach(s => s.works.sort((a, b) => (b.pv || 0) - (a.pv || 0))));
+// 小さなジャンル名の括弧書き（分類のための補足）は、読者には見せない
+GENRES.forEach(g => g.subs.forEach(s => { s.name = s.name.replace(/（[^）]*）/g, ''); }));
 
 const total = GENRES.reduce((a, g) => a + g.count, 0);
 const subTotal = GENRES.reduce((a, g) => a + g.subs.length, 0);
