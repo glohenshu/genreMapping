@@ -49,15 +49,13 @@
   .leader { flex: 1; min-width: 16px; align-self: center; height: 0; border-bottom: 1px dotted var(--accent-soft); margin: 0 4px; transform: translateY(3px); }
 
   /* トップ：表紙まわり */
-  .masthead { padding: 40px 0 26px; border-bottom: 1px solid var(--ink); position: relative; }
+  .masthead { padding: 26px 0 18px; border-bottom: 1px solid var(--ink); position: relative; }
   .masthead::after { content: ''; position: absolute; left: 0; right: 0; bottom: -5px; border-bottom: 1px solid var(--ink); }
-  .issue { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; letter-spacing: 3px; color: var(--accent); padding-bottom: 10px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+  .issue { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; letter-spacing: 3px; color: var(--accent); padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--line); }
   .issue span:last-child { letter-spacing: 1px; color: var(--ink-faint); }
-  h1 { font-family: var(--font-heading); font-size: 34px; font-weight: 600; letter-spacing: 4px; line-height: 1.45; }
-  .lead { font-size: 15px; color: var(--ink-sub); margin-top: 12px; }
-  .stats { display: flex; flex-wrap: wrap; gap: 4px 22px; margin-top: 16px; }
-  .stats div { font-size: 12px; color: var(--ink-faint); letter-spacing: 1px; }
-  .stats b { font-family: var(--font-heading); font-size: 22px; font-weight: 600; color: var(--ink); letter-spacing: 0; margin-right: 3px; }
+  h1 { font-family: var(--font-heading); font-size: 26px; font-weight: 600; letter-spacing: 3px; line-height: 1.45; }
+  .lead { font-size: 14px; color: var(--ink-sub); margin-top: 6px; }
+  .stats { font-size: 12px; color: var(--ink-faint); letter-spacing: 0.5px; margin-top: 4px; }
 
   .sec-label { display: flex; align-items: center; gap: 12px; font-family: var(--font-heading); font-size: 13px; letter-spacing: 6px; color: var(--accent); margin: 34px 0 6px; }
   .sec-label::after { content: ''; flex: 1; border-bottom: 1px solid var(--line); }
@@ -158,11 +156,9 @@
     .header-inner { padding: 10px 16px; }
     .header-sub { display: none; }
     .container { padding: 0 16px 56px; }
-    .masthead { padding: 26px 0 22px; }
-    h1 { font-size: 28px; letter-spacing: 3px; }
-    .lead { font-size: 14px; }
-    .stats { gap: 2px 16px; }
-    .stats b { font-size: 19px; }
+    .masthead { padding: 18px 0 14px; }
+    h1 { font-size: 21px; letter-spacing: 2px; }
+    .lead { font-size: 13px; }
     .toc-row { gap: 10px; padding: 15px 4px 15px 2px; }
     .toc-name { font-size: 18px; }
     .toc-inner { padding: 0 4px 18px 4px; }
@@ -261,7 +257,7 @@ GENRES.forEach(g => g.subs.forEach(s => s.works.sort((a, b) => (b.pv || 0) - (a.
 
 const total = GENRES.reduce((a, g) => a + g.count, 0);
 const subTotal = GENRES.reduce((a, g) => a + g.subs.length, 0);
-$('stats').innerHTML = '<div><b>' + total.toLocaleString() + '</b>作品</div><div><b>' + GENRES.length + '</b>ジャンル</div><div><b>' + subTotal + '</b>の小さなジャンル</div>';
+$('stats').textContent = total.toLocaleString() + '作品・' + GENRES.length + 'ジャンル・' + subTotal + 'の小さなジャンル';
 const up = /^(\d{4})-(\d{2})/.exec(DATA.updated || '');
 if (up) $('issue').textContent = up[1] + '年' + (+up[2]) + '月 更新';
 
