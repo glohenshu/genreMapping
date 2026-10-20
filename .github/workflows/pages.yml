@@ -1,4 +1,4 @@
-# index.html や data/covers_manual.js を手で直して保存（コミット）したときに、ページを公開し直す。
+# index.html などを手で直して保存（コミット）したときに、ページを公開し直す（公開するのは scripts/collect_site.sh で集めたファイルだけ）。
 name: ページを公開
 
 on:
@@ -23,9 +23,11 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - name: 公開するファイルだけを集める
+        run: bash scripts/collect_site.sh
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: "."
+          path: "_site"
       - id: deploy
         uses: actions/deploy-pages@v4

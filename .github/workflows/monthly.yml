@@ -53,9 +53,11 @@ jobs:
             git push
           fi
 
+      - name: 公開するファイルだけを集める
+        run: bash scripts/collect_site.sh
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: "."
+          path: "_site"
       - id: deploy
         uses: actions/deploy-pages@v4
