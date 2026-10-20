@@ -2,7 +2,7 @@
 
 読むアプリ（すべて読み取りだけ。kintoneには何も書き込まない）
   402 連載情報   … 書名・著者・ジャンル表記・内容紹介・連載ステータス・PV累計・出版実績URL・特殊（連載分類）
-  507 連載分類   … 大分類・小分類（主）
+  507 連載分類   … 大分類・小分類（主）・小分類（副）
   341 記事       … 記事ID・カテゴリコード・回数・公開日時（第1回の記事と、491をつなぐため）
   491 単日PV     … 記事ごとの単日SNPV（直近3か月の並び順）
 
@@ -216,7 +216,7 @@ def main():
     # ---- 読み込み
     r402 = fetch_all("402", ["カテゴリID", "書籍タイトル", "著者名", "メインジャンル", "内容紹介", "連載ステータス",
                              "SNPV", "GLOPV", "特殊", "出版実績URL"])
-    r507 = fetch_all("507", ["作品キー", "大分類", "小分類_主"])
+    r507 = fetch_all("507", ["作品キー", "大分類", "小分類_主", "小分類_副"])
     # 341・491は項目の型の違いで絞り込み条件が通らないことがないよう、全件を読んでからこちらで絞る
     r341 = fetch_all("341", ["記事ID", "カテゴリコード", "回数・数値", "公開日時"])
     r491 = fetch_all("491", ["article_id", "article_view", "date"])
@@ -224,19 +224,29 @@ def main():
     r341 = [r for r in r341 if not r.get("公開日時") or str(r["公開日時"])[:19] <= now_utc]
     r491 = [r for r in r491 if r_start <= (ymd(r.get("date")) or dt.date.min) <= r_end]
 
-    # ---- 507：連載コード → 小分類コード（企画・その他など、設定に無い小分類は対象外）
-    cls, unknown_sub, registered = {}, 0, set()
+    # ---- 507：連載コード → 小分類コードの並び [主, 副]（企画・その他など、設定に無い小分類は対象外）
+    def sub_code(v):
+        v = nfkc(v)
+        if not v:
+            return None
+        m = re.match(r"(S\d{2})", v)
+        return m.group(1) if m else subname2code.get(v) or next((c for n, c in subname2code.items() if n and n in v), None)
+
+    cls, unknown_sub, registered, with_second = {}, 0, set(), 0
     for r in r507:
         key = nfkc(r.get("作品キー"))
         registered.add(key)
-        v = nfkc(r.get("小分類_主"))
-        m = re.match(r"(S\d{2})", v)
-        code = m.group(1) if m else subname2code.get(v) or next((c for n, c in subname2code.items() if n and n in v), None)
-        if key and code in sub2genre:
-            cls[key] = code
+        main_code = sub_code(r.get("小分類_主"))
+        if key and main_code in sub2genre:
+            cls[key] = [main_code]
+            # 副は、主が載る作品にだけ使う（主が企画・要確認などの作品は、副があっても載せない）
+            second = sub_code(r.get("小分類_副"))
+            if second in sub2genre and second != main_code:
+                cls[key].append(second)
+                with_second += 1
         elif key:
             unknown_sub += 1
-    print(f"分類：{len(cls)}件を使います（対象外の小分類 {unknown_sub}件）")
+    print(f"分類：{len(cls)}件を使います（うち副の小分類あり {with_second}件、対象外の小分類 {unknown_sub}件）")
 
     # ---- 341：連載コード → 第1回の記事、記事ID → 連載コード
     art2cat, first = {}, {}
@@ -271,7 +281,7 @@ def main():
         groups.setdefault(title_key(r.get("書籍タイトル")), []).append(r)
 
     works_by_sub = {}
-    stats = {"402": len(r402), "作品": 0, "分類待ち": 0, "対象外": 0, "準備中": 0, "まとめた登録": 0}
+    stats = {"402": len(r402), "作品": 0, "分類待ち": 0, "対象外": 0, "準備中": 0, "まとめた登録": 0, "副にも載せた": 0}
     special_values = {}
     pending = []   # 507に登録が無い作品（毎月の分類作業で分類する）
     for key, rs in groups.items():
@@ -305,13 +315,17 @@ def main():
             "pr": max(r["_pr"] for r in rs),
             "_url": next((nfkc(r.get("出版実績URL")) for r in [rep] + rs if nfkc(r.get("出版実績URL"))), ""),
         }
-        works_by_sub.setdefault(cls[rep["_c"]], []).append(w)
+        # 主と副の両方の小分類に、同じ作品を並べる（読者には主・副の区別を見せない）
+        for code in cls[rep["_c"]]:
+            works_by_sub.setdefault(code, []).append(w)
+        stats["副にも載せた"] += len(cls[rep["_c"]]) - 1
         stats["作品"] += 1
         stats["まとめた登録"] += len(rs) - 1
 
     # ---- 安全確認：作品数が前回より大きく減っていたら止める（kintone側の不具合などで空のページにしないため）
     prev = read_js_object(os.path.join(DATA, "genres.js"), "GLO_DATA")
-    prev_n = sum(len(s["works"]) for g in prev.get("genres", []) for s in g["subs"])
+    # 同じ作品が主と副の2か所に載るため、連載コードで1作品と数える
+    prev_n = prev.get("total") or len({w["c"] for g in prev.get("genres", []) for s in g["subs"] for w in s["works"]})
     if prev_n and stats["作品"] < prev_n * 0.8:
         raise SystemExit(f"！ 作品数が前回（{prev_n}）から大きく減った（{stats['作品']}）ため、更新を止めました。kintoneの状態を確認してください。")
 
@@ -321,32 +335,32 @@ def main():
     check_cover = []
     got = {"記事の書籍情報欄": 0, "出版実績URL": 0, "取れず": 0}
     url_filled = 0
-    for ws in works_by_sub.values():
-        for w in ws:
-            url_filled += 1 if w["_url"] else 0
-            if w["c"] in manual or w["c"] in auto:
-                continue
-            img, why = (None, "第1回の記事が無い")
-            if w["f"]:
-                img, why = cover_from_article(w["f"])
-                time.sleep(0.5)
-            if img:
-                auto[w["c"]] = img
-                got["記事の書籍情報欄"] += 1
-                continue
-            img = cover_from_product(w["_url"])
+    # 主と副の2か所に入っている作品も、1作品として扱う
+    all_w = list({id(w): w for ws in works_by_sub.values() for w in ws}.values())
+    for w in all_w:
+        url_filled += 1 if w["_url"] else 0
+        if w["c"] in manual or w["c"] in auto:
+            continue
+        img, why = (None, "第1回の記事が無い")
+        if w["f"]:
+            img, why = cover_from_article(w["f"])
             time.sleep(0.5)
-            if img:
-                auto[w["c"]] = img
-                got["出版実績URL"] += 1
-                check_cover.append((w, f"{why}のため、出版実績URLの書影を使いました（念のため確認）"))
-            else:
-                got["取れず"] += 1
-                check_cover.append((w, f"{why}。出版実績URLからも取れませんでした" if w["_url"] else f"{why}。出版実績URLも未入力です"))
+        if img:
+            auto[w["c"]] = img
+            got["記事の書籍情報欄"] += 1
+            continue
+        img = cover_from_product(w["_url"])
+        time.sleep(0.5)
+        if img:
+            auto[w["c"]] = img
+            got["出版実績URL"] += 1
+            check_cover.append((w, f"{why}のため、出版実績URLの書影を使いました（念のため確認）"))
+        else:
+            got["取れず"] += 1
+            check_cover.append((w, f"{why}。出版実績URLからも取れませんでした" if w["_url"] else f"{why}。出版実績URLも未入力です"))
     print(f"書影：新しく {got['記事の書籍情報欄'] + got['出版実績URL']}件（記事 {got['記事の書籍情報欄']}／出版実績 {got['出版実績URL']}）、取れず {got['取れず']}件")
 
     # ---- PVの実数は公開しない：並び順だけが分かる「順位の点数」に置き換える（大きいほど上）
-    all_w = [w for ws in works_by_sub.values() for w in ws]
     n = len(all_w)
     for key in ("pv", "pr"):
         order = sorted((w for w in all_w if w[key] > 0), key=lambda w: -w[key])
@@ -369,9 +383,11 @@ def main():
             if ws:
                 subs.append({"code": s["code"], "name": s["name"], "works": ws})
         if subs:
+            # ジャンルの作品数は、主と副で同じジャンルに2回入る作品も1作品と数える
             genres.append({"id": g["id"], "name": g["name"], "desc": g["desc"], "hue": g["hue"],
-                           "count": sum(len(s["works"]) for s in subs), "subs": subs})
-    data = {"updated": today.isoformat(), "hasRecent": bool(recent), "recentLabel": r_label, "genres": genres}
+                           "count": len({w["c"] for s in subs for w in s["works"]}), "subs": subs})
+    data = {"updated": today.isoformat(), "hasRecent": bool(recent), "recentLabel": r_label,
+            "total": stats["作品"], "genres": genres}
     write_js(os.path.join(DATA, "genres.js"), "GLO_DATA", data, "作品データ（毎月自動で作り直す。手で直さない）")
     write_js(os.path.join(DATA, "covers_auto.js"), "COVERS_AUTO", auto, "新しい連載の書影（毎月の自動処理が追記する）")
 
@@ -379,6 +395,7 @@ def main():
              "毎月の自動更新で、人が確認したほうがよいものをまとめています。", "",
              "## 件数", "",
              f"- 作品数：{stats['作品']}（ピックアップ版などをまとめた登録 {stats['まとめた登録']}件）",
+             f"- 小分類（副）にも載せた作品：{stats['副にも載せた']}",
              f"- 分類待ち（507に登録が無い）作品：{stats['分類待ち']}（一覧は下の「分類待ちの作品」）",
              f"- 507で対象外の小分類（企画・お知らせ・要確認など）の作品：{stats['対象外']}",
              f"- 連載準備中で第1回が未公開のため、まだ載せていない作品：{stats['準備中']}",

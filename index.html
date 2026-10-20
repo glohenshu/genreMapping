@@ -199,7 +199,8 @@ function coverUrl(w) {
   if (/^https?:/.test(h)) return h;
   return COVER_BASE + h[0] + '/' + h[1] + '/240w/img_' + h;
 }
-const total = GENRES.reduce((a, g) => a + g.count, 0);
+// 主と副の2か所に載る作品も1作品と数える（DATA.total は毎月の自動更新が入れる）
+const total = DATA.total || GENRES.reduce((a, g) => a + g.count, 0);
 const subTotal = GENRES.reduce((a, g) => a + g.subs.length, 0);
 document.getElementById('stats').textContent = '全' + total.toLocaleString() + '作品／' + GENRES.length + 'ジャンル／' + subTotal + 'の小さなジャンル';
 
