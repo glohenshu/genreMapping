@@ -70,6 +70,9 @@
   .toc-subs a small { color: var(--ink-faint); font-size: 13px; white-space: nowrap; }
   .toc-all { display: inline-block; margin-top: 10px; font-size: 14px; font-weight: 500; text-decoration: none; }
   .toc-all::after, .more-link::after { content: ' →'; }
+  .toc-foot { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .toc-close { margin-top: 10px; margin-left: auto; background: none; border: 1px solid var(--line); border-radius: 4px; padding: 4px 12px; font-size: 13px; color: var(--ink-sub); cursor: pointer; }
+  .toc-close:hover { border-color: var(--ink-faint); color: var(--ink); }
 
   .cta { margin-top: 40px; padding: 22px 20px; background: var(--paper-2); border-radius: 4px; }
   .cta p { font-size: 14px; color: var(--ink-sub); }
@@ -215,7 +218,7 @@ toc.innerHTML = GENRES.map((g, i) =>
   '<li data-i="' + i + '"><button class="toc-row" aria-expanded="false"><span class="toc-no">' + no(i) + '</span><span class="toc-name">' + esc(g.name) + '</span><span class="toc-count">' + g.count + '作品</span><span class="toc-mark">›</span></button>' +
   '<div class="toc-body"><p class="toc-desc">' + esc(g.desc) + '</p><ul class="toc-subs">' +
   g.subs.map(s => '<li><a href="#" data-s="' + s.code + '">' + esc(s.name) + '<small>' + s.works.length + '作品</small></a></li>').join('') +
-  '</ul><a class="toc-all" href="#">「' + esc(g.name) + '」の作品をすべて見る</a></div></li>').join('');
+  '</ul><div class="toc-foot"><a class="toc-all" href="#">「' + esc(g.name) + '」の作品をすべて見る</a><button class="toc-close" type="button">閉じる ▲</button></div></div></li>').join('');
 toc.addEventListener('click', e => {
   const li = e.target.closest('li[data-i]');
   if (!li) return;
@@ -224,6 +227,13 @@ toc.addEventListener('click', e => {
     const open = !li.classList.contains('open');
     li.classList.toggle('open', open);
     li.querySelector('.toc-row').setAttribute('aria-expanded', open);
+    return;
+  }
+  if (e.target.closest('.toc-close')) {
+    li.classList.remove('open');
+    li.querySelector('.toc-row').setAttribute('aria-expanded', false);
+    // 閉じたジャンルの見出しが画面の上に隠れていたら、見える位置に戻す
+    if (li.getBoundingClientRect().top < 60) { li.scrollIntoView(); window.scrollBy(0, -60); }
     return;
   }
   const a = e.target.closest('a');
