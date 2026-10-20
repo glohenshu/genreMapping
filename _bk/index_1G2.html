@@ -350,7 +350,7 @@
     .card-cover { width: 72px; height: 106px; margin: 2px 14px 8px 0; }
   }
 
-  /* ===== 案1の色違い：1E 生成り×紺×金（1Dの読みやすさ強化）（1Dが土台） ===== */
+  /* ===== 案1の色違い：1G 白×深緑（金は細い線だけ）（1Dが土台・白地に修正） ===== */
   :root {
     --bg: #f7f3ea; --bg-card: #ffffff; --bg-card-hover: #fffaf0; --navy: #1b2238;
     --gold: #94733a; --gold-light: #6f5322; --gold-mid: #b08c46;
@@ -396,6 +396,28 @@
     .card-title { font-size: 17px; }
     .over-list li { font-size: 14px; }
   }
+
+  :root {
+    --bg: #fbfaf6; --bg-card: #ffffff; --bg-card-hover: #f6f8f5; --navy: #1e3a2f;
+    --gold: #2f6150; --gold-light: #1e3a2f; --gold-mid: #3a7562;
+    --gold-dim: rgba(47,97,80,0.08); --gold-border: rgba(30,58,47,0.18); --gold-glow: rgba(47,97,80,0.05);
+    --text: #1f2a26; --border: rgba(30,58,47,0.13);
+  }
+  :root { --text-sub: rgba(31,42,38,0.80); }
+  header { background: rgba(251,250,246,0.96); border-bottom: 2px solid #b08c46; }
+  .top-ornament-line { background: linear-gradient(90deg, transparent, #b08c46, transparent); }
+  .top-ornament-text, .list-label { color: #9a7838; }
+  .tab.on, .card-link.main, .cta-btn, .sort-seg button.on { background: var(--navy); }
+  .card-live { background: #9a7838; }
+  .card:hover { border-color: var(--gold-mid); }
+  .cta-card { background: #f1f4ef; }
+
+  /* --- 1G改：地を真っ白に（生成りに見える要素を外す） --- */
+  :root { --bg: #ffffff; --bg-card-hover: #f7f9f7; }
+  body { background: #ffffff; }
+  header { background: rgba(255,255,255,0.97); }
+  #map { background: none; }
+  .cta-card { background: #f4f7f4; }
 
   /* おすすめ作品診断の枠：診断ページができるまで非表示（表示に戻すときは、この1行を消す） */
   .cta-card { display: none !important; }
@@ -489,9 +511,9 @@
   <div id="sheetBody"></div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-<script src="data/genres.js"></script>
-<script src="data/covers_manual.js"></script>
-<script src="data/covers_auto.js"></script>
+<script src="../data/genres.js"></script>
+<script src="../data/covers_manual.js"></script>
+<script src="../data/covers_auto.js"></script>
 <script>
 /* ===== データの読み込み ===== */
 const DATA = window.GLO_DATA || { genres: [], hasRecent: false };
