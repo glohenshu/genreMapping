@@ -1,0 +1,55 @@
+# kintone の「小分類の表示設定」アプリだけを読み、表示・非表示を反映して公開し直す（1分ほど）。
+# 作品データ（402・507 など）は読まないし、作り直さない。
+# 「Actions」→「小分類の表示設定を反映」→「Run workflow」で、手動で動かします（自動では動きません）。
+name: 小分類の表示設定を反映
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 表示設定を読む
+        env:
+          KINTONE_DOMAIN: ${{ secrets.KINTONE_DOMAIN }}
+          KINTONE_DISPLAY_APP: ${{ secrets.KINTONE_DISPLAY_APP }}
+          KINTONE_TOKEN_DISPLAY: ${{ secrets.KINTONE_TOKEN_DISPLAY }}
+        run: python scripts/build_display.py
+
+      - name: 変わった表示設定を保存する
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/display.js
+          if git diff --cached --quiet; then
+            echo "表示設定に変更はありませんでした"
+          else
+            git commit -m "小分類の表示設定を反映（$(TZ=Asia/Tokyo date +%Y-%m-%d)）"
+            git push
+          fi
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+      - id: deploy
+        uses: actions/deploy-pages@v4

@@ -5,10 +5,11 @@
   507 連載分類   … 大分類・小分類（主）・小分類（副）
   341 記事       … 記事ID・カテゴリコード・回数・公開日時（第1回の記事と、491をつなぐため）
   491 単日PV     … 記事ごとの単日SNPV（直近3か月の並び順）
-  小分類の表示設定（シークレット KINTONE_DISPLAY_APP のアプリ）… 小分類コード・表示（「表示しない」の小分類をページに出さない）
+  小分類の表示設定（シークレット KINTONE_DISPLAY_APP のアプリ）… 小分類コード・表示（「表示しない」の小分類の一覧を data/display.js に書く）
 
 書き出すファイル
-  data/genres.js       作品データ（ページが読む）
+  data/genres.js       作品データ（ページが読む。表示しない小分類も含めて全部書く）
+  data/display.js      表示しない小分類の一覧（ページが読んで、その小分類を隠す）
   data/covers_auto.js  新しい連載の書影（追記のみ。確定済みの covers_manual.js には触らない）
   data/check.md        人が確認するリスト（書影が取れなかった作品など）
 
@@ -88,6 +89,31 @@ def fetch_all(app, fields, query="", token_name=None):
         raise
     print(f"アプリ{app}：{len(rows)}件を読み込みました")
     return rows
+
+
+# ---------------------------------------------------------------- 小分類の表示設定
+def read_hidden():
+    """表示設定アプリで「表示しない」にした小分類コードの集合。アプリが未設定なら None。"""
+    if not DISPLAY_APP:
+        return None
+    hidden = set()
+    for r in fetch_all(DISPLAY_APP, ["小分類コード", "表示"], token_name="KINTONE_TOKEN_DISPLAY"):
+        m = re.match(r"(S\d{2})", nfkc(r.get("小分類コード")))
+        if m and "表示しない" in nfkc(r.get("表示")):
+            hidden.add(m.group(1))
+    return hidden
+
+
+def write_display(hidden):
+    """表示しない小分類の一覧を data/display.js に書く（ページはこれを見て隠す）。"""
+    path = os.path.join(DATA, "display.js")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("/* 表示しない小分類（kintone の表示設定アプリから作る。手で直さない） */\n"
+                "window.GLO_HIDDEN = " + json.dumps(sorted(hidden or []), ensure_ascii=False) + ";\n")
+    if hidden is None:
+        print("表示設定：アプリが未設定のため、すべての小分類を表示します")
+    else:
+        print(f"表示設定：{len(hidden)}の小分類を表示しません")
 
 
 # ---------------------------------------------------------------- 文字の整え
@@ -223,16 +249,8 @@ def main():
     # 341・491は項目の型の違いで絞り込み条件が通らないことがないよう、全件を読んでからこちらで絞る
     r341 = fetch_all("341", ["記事ID", "カテゴリコード", "回数・数値", "公開日時"])
     r491 = fetch_all("491", ["article_id", "article_view", "date"])
-    # 小分類の表示設定：「表示しない」にした小分類はページに出さない（アプリが未設定なら、すべて出す）
-    hidden = set()
-    if DISPLAY_APP:
-        for r in fetch_all(DISPLAY_APP, ["小分類コード", "表示"], token_name="KINTONE_TOKEN_DISPLAY"):
-            m = re.match(r"(S\d{2})", nfkc(r.get("小分類コード")))
-            if m and "表示しない" in nfkc(r.get("表示")):
-                hidden.add(m.group(1))
-        print(f"表示設定：{len(hidden)}の小分類を表示しません")
-    else:
-        print("表示設定：アプリが未設定のため、すべての小分類を表示します")
+    # 小分類の表示設定（アプリが未設定なら None ＝すべて表示）
+    hidden = read_hidden()
     now_utc = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
     r341 = [r for r in r341 if not r.get("公開日時") or str(r["公開日時"])[:19] <= now_utc]
     r491 = [r for r in r491 if r_start <= (ymd(r.get("date")) or dt.date.min) <= r_end]
@@ -394,9 +412,10 @@ def main():
             for w in ws:
                 w.pop("_url", None)
             all_codes |= {w["c"] for w in ws}
-            if s["code"] in hidden:
+            # 表示しない小分類も作品データには残す（隠すのはページ側。表示設定だけを反映し直せるように）
+            if s["code"] in (hidden or ()):
                 hidden_rows.append((s["code"], g["name"], s["name"], len(ws)))
-            elif ws:
+            if ws:
                 subs.append({"code": s["code"], "name": s["name"], "works": ws})
         if subs:
             # ジャンルの作品数は、主と副で同じジャンルに2回入る作品も1作品と数える。
@@ -407,6 +426,7 @@ def main():
             "total": stats["作品"], "genres": genres}
     write_js(os.path.join(DATA, "genres.js"), "GLO_DATA", data, "作品データ（毎月自動で作り直す。手で直さない）")
     write_js(os.path.join(DATA, "covers_auto.js"), "COVERS_AUTO", auto, "新しい連載の書影（毎月の自動処理が追記する）")
+    write_display(hidden)
 
     lines = [f"# 確認リスト（{today.isoformat()} 更新）", "",
              "毎月の自動更新で、人が確認したほうがよいものをまとめています。", "",
@@ -422,12 +442,12 @@ def main():
              "## 「特殊（連載分類）」の値と件数", ""]
     lines += [f"- {k}：{v}" for k, v in sorted(special_values.items(), key=lambda x: -x[1])]
     lines += ["", "## 表示しない小分類", "",
-              "小分類の表示設定アプリで「表示しない」にした小分類です。作品数（ジャンルの作品数・全○作品）には含めています。", ""]
+              "小分類の表示設定アプリで「表示しない」にした小分類です（この確認リストを作った時点）。作品数（ジャンルの作品数・全○作品）には含めています。", ""]
     if hidden_rows:
         lines += ["| コード | ジャンル | 小分類 | 作品数 |", "|---|---|---|---|"]
         lines += [f"| {c} | {gn} | {sname} | {n} |" for c, gn, sname, n in hidden_rows]
     else:
-        lines.append("ありません。" if DISPLAY_APP else "表示設定アプリが未設定のため、すべて表示しています。")
+        lines.append("ありません。" if hidden is not None else "表示設定アプリが未設定のため、すべて表示しています。")
     lines += ["", "## 分類待ちの作品", "",
               "507に登録が無いため、ページに載っていない作品です。毎月の分類作業（`docs/classification.md`）で分類してください。", ""]
     if pending:
