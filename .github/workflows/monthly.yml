@@ -36,6 +36,9 @@ jobs:
           KINTONE_TOKEN_507: ${{ secrets.KINTONE_TOKEN_507 }}
           KINTONE_TOKEN_341: ${{ secrets.KINTONE_TOKEN_341 }}
           KINTONE_TOKEN_491: ${{ secrets.KINTONE_TOKEN_491 }}
+          # 小分類の表示設定アプリ（未登録なら、すべての小分類を表示する）
+          KINTONE_DISPLAY_APP: ${{ secrets.KINTONE_DISPLAY_APP }}
+          KINTONE_TOKEN_DISPLAY: ${{ secrets.KINTONE_TOKEN_DISPLAY }}
         run: python scripts/build_data.py
 
       - name: 変わったデータを保存する

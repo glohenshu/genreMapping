@@ -5,6 +5,7 @@
   507 連載分類   … 大分類・小分類（主）・小分類（副）
   341 記事       … 記事ID・カテゴリコード・回数・公開日時（第1回の記事と、491をつなぐため）
   491 単日PV     … 記事ごとの単日SNPV（直近3か月の並び順）
+  小分類の表示設定（シークレット KINTONE_DISPLAY_APP のアプリ）… 小分類コード・表示（「表示しない」の小分類をページに出さない）
 
 書き出すファイル
   data/genres.js       作品データ（ページが読む）
@@ -31,6 +32,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
 JST = dt.timezone(dt.timedelta(hours=9))
 DOMAIN = os.environ.get("KINTONE_DOMAIN", "").strip().replace("https://", "").rstrip("/")
+DISPLAY_APP = os.environ.get("KINTONE_DISPLAY_APP", "").strip()
 UA = "Mozilla/5.0 (compatible; genreMapping-monthly/1.0)"
 
 
@@ -62,11 +64,12 @@ def kintone(method, path, token, params=None, body=None):
             raise
 
 
-def fetch_all(app, fields, query=""):
+def fetch_all(app, fields, query="", token_name=None):
     """カーソルAPIで全件を読む（指定した項目だけ）。"""
-    token = os.environ.get(f"KINTONE_TOKEN_{app}", "").strip()
+    token_name = token_name or f"KINTONE_TOKEN_{app}"
+    token = os.environ.get(token_name, "").strip()
     if not token:
-        raise SystemExit(f"！ シークレット KINTONE_TOKEN_{app} が登録されていません")
+        raise SystemExit(f"！ シークレット {token_name} が登録されていません")
     cur = kintone("POST", "/k/v1/records/cursor.json", token,
                   body={"app": app, "fields": fields, "query": query, "size": 500})
     rows = []
@@ -220,6 +223,16 @@ def main():
     # 341・491は項目の型の違いで絞り込み条件が通らないことがないよう、全件を読んでからこちらで絞る
     r341 = fetch_all("341", ["記事ID", "カテゴリコード", "回数・数値", "公開日時"])
     r491 = fetch_all("491", ["article_id", "article_view", "date"])
+    # 小分類の表示設定：「表示しない」にした小分類はページに出さない（アプリが未設定なら、すべて出す）
+    hidden = set()
+    if DISPLAY_APP:
+        for r in fetch_all(DISPLAY_APP, ["小分類コード", "表示"], token_name="KINTONE_TOKEN_DISPLAY"):
+            m = re.match(r"(S\d{2})", nfkc(r.get("小分類コード")))
+            if m and "表示しない" in nfkc(r.get("表示")):
+                hidden.add(m.group(1))
+        print(f"表示設定：{len(hidden)}の小分類を表示しません")
+    else:
+        print("表示設定：アプリが未設定のため、すべての小分類を表示します")
     now_utc = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
     r341 = [r for r in r341 if not r.get("公開日時") or str(r["公開日時"])[:19] <= now_utc]
     r491 = [r for r in r491 if r_start <= (ymd(r.get("date")) or dt.date.min) <= r_end]
@@ -373,19 +386,23 @@ def main():
             w[key] = w.pop("_" + key, 0)
 
     # ---- 書き出し
-    genres = []
+    genres, hidden_rows = [], []
     for g in config:
-        subs = []
+        subs, all_codes = [], set()
         for s in g["subs"]:
             ws = sorted(works_by_sub.get(s["code"], []), key=lambda w: -w["pv"])
             for w in ws:
                 w.pop("_url", None)
-            if ws:
+            all_codes |= {w["c"] for w in ws}
+            if s["code"] in hidden:
+                hidden_rows.append((s["code"], g["name"], s["name"], len(ws)))
+            elif ws:
                 subs.append({"code": s["code"], "name": s["name"], "works": ws})
         if subs:
-            # ジャンルの作品数は、主と副で同じジャンルに2回入る作品も1作品と数える
+            # ジャンルの作品数は、主と副で同じジャンルに2回入る作品も1作品と数える。
+            # 表示しない小分類の作品も、作品数には含める
             genres.append({"id": g["id"], "name": g["name"], "desc": g["desc"], "hue": g["hue"],
-                           "count": len({w["c"] for s in subs for w in s["works"]}), "subs": subs})
+                           "count": len(all_codes), "subs": subs})
     data = {"updated": today.isoformat(), "hasRecent": bool(recent), "recentLabel": r_label,
             "total": stats["作品"], "genres": genres}
     write_js(os.path.join(DATA, "genres.js"), "GLO_DATA", data, "作品データ（毎月自動で作り直す。手で直さない）")
@@ -404,6 +421,13 @@ def main():
              f"- 書影（新しく集めた分）：記事 {got['記事の書籍情報欄']}件／出版実績 {got['出版実績URL']}件／取れず {got['取れず']}件", "",
              "## 「特殊（連載分類）」の値と件数", ""]
     lines += [f"- {k}：{v}" for k, v in sorted(special_values.items(), key=lambda x: -x[1])]
+    lines += ["", "## 表示しない小分類", "",
+              "小分類の表示設定アプリで「表示しない」にした小分類です。作品数（ジャンルの作品数・全○作品）には含めています。", ""]
+    if hidden_rows:
+        lines += ["| コード | ジャンル | 小分類 | 作品数 |", "|---|---|---|---|"]
+        lines += [f"| {c} | {gn} | {sname} | {n} |" for c, gn, sname, n in hidden_rows]
+    else:
+        lines.append("ありません。" if DISPLAY_APP else "表示設定アプリが未設定のため、すべて表示しています。")
     lines += ["", "## 分類待ちの作品", "",
               "507に登録が無いため、ページに載っていない作品です。毎月の分類作業（`docs/classification.md`）で分類してください。", ""]
     if pending:
