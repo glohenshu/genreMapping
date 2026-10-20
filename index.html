@@ -13,148 +13,170 @@
 <meta name="twitter:card" content="summary">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Shippori+Mincho:wght@500;600&display=swap" rel="stylesheet">
 <style>
-  /* 雑誌の目次型（白地・文字が主役）。ジャンルごとの色は data/genres.js の hue を薄く使う */
+  /* 雑誌の目次型（白地・文字が主役・装飾は最小限） */
   :root {
     --paper: #ffffff;
     --paper-2: #f6f4ef;
+    --paper-3: #fbfaf7;
     --ink: #1d1d1f;
     --ink-sub: #55555a;
     --ink-faint: #85858a;
     --line: #e4e0d6;
     --accent: #8a6a32;      /* 番号・細い線（くすんだ金） */
+    --accent-soft: #c9b48a;
     --link: #1f3a68;        /* 押せる文字（紺） */
     --font-heading: 'Shippori Mincho', serif;
     --font-body: 'Noto Sans JP', sans-serif;
-    --hh: 50px;             /* ヘッダーの高さ（JSで実測して上書き） */
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
   body { font-family: var(--font-body); background: var(--paper); color: var(--ink); font-size: 16px; line-height: 1.8; }
   a { color: var(--link); }
   button { font-family: inherit; }
-  img { display: block; }
 
-  /* ジャンルごとの色（--h に色相を入れる） */
-  .tinted { --g-deep: hsl(var(--h), 32%, 34%); --g-mid: hsl(var(--h), 26%, 62%); --g-soft: hsl(var(--h), 30%, 95%); --g-line: hsl(var(--h), 22%, 86%); }
-
-  header { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,0.96); border-bottom: 1px solid var(--line); backdrop-filter: blur(8px); }
-  .header-inner { max-width: 1000px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 12px; }
-  .header-logo { height: 18px; }
+  header { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,0.96); border-bottom: 1px solid var(--line); backdrop-filter: blur(8px); }
+  .header-inner { max-width: 720px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 12px; }
+  .header-logo { height: 18px; display: block; }
   .header-sub { font-size: 12px; color: var(--ink-sub); letter-spacing: 1px; text-decoration: none; }
   .header-home { margin-left: auto; font-size: 13px; text-decoration: none; }
 
-  .container { max-width: 1000px; margin: 0 auto; padding: 0 20px 64px; }
-  .narrow { max-width: 760px; margin: 0 auto; }
+  .container { max-width: 720px; margin: 0 auto; padding: 0 20px 64px; }
   .screen { display: none; }
-  .screen.active { display: block; }
+  .screen.active { display: block; animation: fadein .25s ease; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
-  /* トップ */
-  .masthead { padding: 44px 0 30px; text-align: center; }
-  .eyebrow { font-size: 11px; letter-spacing: 4px; color: var(--accent); margin-bottom: 6px; }
-  h1 { font-family: var(--font-heading); font-size: 32px; font-weight: 600; letter-spacing: 3px; line-height: 1.5; }
-  .rule { width: 48px; height: 1px; background: var(--accent); margin: 16px auto; border: 0; }
-  .lead { font-size: 15px; color: var(--ink-sub); }
-  .stats { font-size: 13px; color: var(--ink-faint); margin-top: 4px; }
+  /* 点線のリーダー（目次の「……」） */
+  .leader { flex: 1; min-width: 16px; align-self: center; height: 0; border-bottom: 1px dotted var(--accent-soft); margin: 0 4px; transform: translateY(3px); }
 
-  .tiles { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  .tile { display: flex; flex-direction: column; height: 100%; text-decoration: none; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; transition: border-color .15s, box-shadow .15s, transform .15s; }
-  .tile:hover { border-color: var(--g-mid); box-shadow: 0 6px 18px rgba(0,0,0,0.07); transform: translateY(-2px); }
-  .tile-covers { position: relative; height: 118px; background: var(--g-soft); border-bottom: 1px solid var(--g-line); display: flex; justify-content: center; align-items: flex-end; padding-bottom: 12px; }
-  .tile-covers img { width: 58px; height: 84px; object-fit: cover; background: #fff; border-radius: 2px; box-shadow: 0 2px 6px rgba(0,0,0,0.16); margin: 0 -6px; }
-  .tile-covers img:nth-child(1) { transform: rotate(-6deg) translateY(4px); }
-  .tile-covers img:nth-child(2) { z-index: 1; width: 64px; height: 92px; }
-  .tile-covers img:nth-child(3) { transform: rotate(6deg) translateY(4px); }
-  .tile-no { font-family: var(--font-heading); font-size: 12px; letter-spacing: 2px; color: var(--g-deep); line-height: 1.4; }
-  .tile-text { padding: 14px 16px 16px; display: flex; flex-direction: column; flex: 1; }
-  .tile-name { font-family: var(--font-heading); font-size: 19px; font-weight: 600; letter-spacing: 1px; line-height: 1.5; }
-  .tile-desc { font-size: 13px; color: var(--ink-sub); line-height: 1.75; margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .tile-foot { margin-top: auto; padding-top: 10px; display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--ink-faint); }
-  .tile-go { color: var(--link); font-size: 13px; font-weight: 500; }
+  /* トップ：表紙まわり */
+  .masthead { padding: 40px 0 26px; border-bottom: 1px solid var(--ink); position: relative; }
+  .masthead::after { content: ''; position: absolute; left: 0; right: 0; bottom: -5px; border-bottom: 1px solid var(--ink); }
+  .issue { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; letter-spacing: 3px; color: var(--accent); padding-bottom: 10px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+  .issue span:last-child { letter-spacing: 1px; color: var(--ink-faint); }
+  h1 { font-family: var(--font-heading); font-size: 34px; font-weight: 600; letter-spacing: 4px; line-height: 1.45; }
+  .lead { font-size: 15px; color: var(--ink-sub); margin-top: 12px; }
+  .stats { display: flex; flex-wrap: wrap; gap: 4px 22px; margin-top: 16px; }
+  .stats div { font-size: 12px; color: var(--ink-faint); letter-spacing: 1px; }
+  .stats b { font-family: var(--font-heading); font-size: 22px; font-weight: 600; color: var(--ink); letter-spacing: 0; margin-right: 3px; }
+
+  .sec-label { display: flex; align-items: center; gap: 12px; font-family: var(--font-heading); font-size: 13px; letter-spacing: 6px; color: var(--accent); margin: 34px 0 6px; }
+  .sec-label::after { content: ''; flex: 1; border-bottom: 1px solid var(--line); }
+  .sec-hint { font-size: 12px; color: var(--ink-faint); margin-bottom: 4px; }
+
+  /* 目次 */
+  .toc { list-style: none; }
+  .toc > li { border-bottom: 1px solid var(--line); transition: background .2s; }
+  .toc > li.open { background: var(--paper-3); }
+  .toc-row { width: 100%; display: flex; align-items: baseline; gap: 14px; padding: 17px 8px 17px 4px; background: none; border: 0; text-align: left; cursor: pointer; color: var(--ink); }
+  .toc-row:hover .toc-name { color: var(--link); }
+  .toc-no { font-family: var(--font-heading); font-size: 15px; color: var(--accent); width: 1.6em; flex-shrink: 0; }
+  .toc-name { font-family: var(--font-heading); font-size: 20px; font-weight: 600; letter-spacing: 1px; transition: color .15s; }
+  .toc-count { font-family: var(--font-heading); font-size: 14px; color: var(--ink-sub); white-space: nowrap; }
+  .toc-count small { font-family: var(--font-body); font-size: 11px; color: var(--ink-faint); margin-left: 2px; }
+  .toc-mark { width: 1em; text-align: center; color: var(--ink-faint); font-size: 14px; transition: transform .25s; }
+  .toc > li.open .toc-mark { transform: rotate(90deg); color: var(--accent); }
+  /* 開くときに、すっと伸びる */
+  .toc-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s ease; }
+  .toc > li.open .toc-body { grid-template-rows: 1fr; }
+  .toc-body > div { overflow: hidden; }
+  .toc-inner { padding: 0 8px 20px calc(1.6em + 18px); }
+  .toc-desc { font-size: 14px; color: var(--ink-sub); line-height: 1.9; margin-bottom: 8px; }
+  .toc-subs { list-style: none; counter-reset: sub; }
+  .toc-subs li { counter-increment: sub; }
+  .toc-subs a { display: flex; align-items: baseline; gap: 6px; padding: 8px 0; font-size: 15px; text-decoration: none; color: var(--ink); }
+  .toc-subs a::before { content: counter(sub); font-family: var(--font-heading); font-size: 12px; color: var(--accent); width: 1.4em; flex-shrink: 0; }
+  .toc-subs a:hover .sub-name { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
+  .toc-subs .num { font-family: var(--font-heading); font-size: 14px; color: var(--ink-sub); white-space: nowrap; }
+  .toc-all { display: inline-block; margin-top: 12px; padding: 7px 16px; border: 1px solid var(--link); border-radius: 999px; font-size: 13px; font-weight: 500; text-decoration: none; transition: background .15s, color .15s; }
+  .toc-all:hover { background: var(--link); color: #fff; }
+  .toc-all::after { content: ' →'; }
 
   .cta { margin-top: 40px; padding: 22px 20px; background: var(--paper-2); border-radius: 4px; }
   .cta p { font-size: 14px; color: var(--ink-sub); }
   .cta a { display: inline-block; margin-top: 6px; font-weight: 500; font-size: 15px; }
 
-  /* ジャンルのページ */
+  /* ジャンルの作品一覧（章のとびら） */
   .crumb { padding: 18px 0 0; font-size: 13px; color: var(--ink-faint); }
   .crumb a { text-decoration: none; }
-  .list-head { margin-top: 12px; padding: 24px 24px 22px; background: var(--g-soft); border: 1px solid var(--g-line); border-radius: 6px; }
-  .list-no { font-family: var(--font-heading); font-size: 13px; color: var(--g-deep); letter-spacing: 2px; }
-  .list-title { font-family: var(--font-heading); font-size: 28px; font-weight: 600; letter-spacing: 2px; line-height: 1.5; }
+  .list-head { position: relative; padding: 22px 0 22px; border-bottom: 1px solid var(--ink); }
+  .list-head::after { content: ''; position: absolute; left: 0; right: 0; bottom: -5px; border-bottom: 1px solid var(--ink); }
+  .list-no { display: flex; align-items: baseline; gap: 10px; font-size: 11px; letter-spacing: 4px; color: var(--accent); }
+  .list-no b { font-family: var(--font-heading); font-size: 40px; font-weight: 500; letter-spacing: 0; line-height: 1.1; }
+  .list-title { font-family: var(--font-heading); font-size: 30px; font-weight: 600; letter-spacing: 3px; line-height: 1.5; margin-top: 4px; }
   .list-desc { font-size: 15px; color: var(--ink-sub); margin-top: 8px; }
-  .list-count { font-size: 13px; color: var(--ink-faint); margin-top: 8px; }
+  .list-count { font-size: 12px; color: var(--ink-faint); margin-top: 8px; letter-spacing: 0.5px; }
 
-  .subnav-wrap { position: sticky; top: var(--hh); z-index: 10; background: rgba(255,255,255,0.97); margin: 0 -20px; padding: 0 20px; border-bottom: 1px solid var(--line); }
-  .subnav-label { font-size: 11px; letter-spacing: 2px; color: var(--ink-faint); padding-top: 12px; }
-  .subnav { list-style: none; display: flex; gap: 8px; overflow-x: auto; padding: 6px 24px 12px 0; scrollbar-width: thin; -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
-  @media (pointer: coarse) { .subnav { scrollbar-width: none; } .subnav::-webkit-scrollbar { display: none; } }
-  .subnav a { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; padding: 6px 14px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; color: var(--ink); text-decoration: none; background: #fff; transition: background .15s, border-color .15s; }
-  .subnav a small { font-size: 12px; color: var(--ink-faint); }
-  .subnav a:hover { border-color: var(--g-mid); }
-  .subnav a.on { background: var(--g-deep); border-color: var(--g-deep); color: #fff; }
-  .subnav a.on small { color: rgba(255,255,255,0.75); }
+  .sub-index { margin: 26px 0 8px; padding: 16px 20px 12px; background: var(--paper-2); border-radius: 4px; }
+  .sub-index-label { font-family: var(--font-heading); font-size: 12px; letter-spacing: 5px; color: var(--accent); margin-bottom: 4px; }
+  .sub-index ol { list-style: none; }
+  .sub-index a { display: flex; align-items: baseline; gap: 6px; padding: 5px 0; font-size: 14px; text-decoration: none; color: var(--ink); }
+  .sub-index a:hover .sub-name { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
+  .sub-index .no { font-family: var(--font-heading); font-size: 12px; color: var(--accent); width: 2.6em; flex-shrink: 0; }
+  .sub-index .num { font-family: var(--font-heading); font-size: 13px; color: var(--ink-sub); white-space: nowrap; }
 
-  .sub-sec { margin-top: 36px; scroll-margin-top: calc(var(--hh) + 96px); }
-  .sub-title { font-family: var(--font-heading); font-size: 21px; font-weight: 600; letter-spacing: 1px; line-height: 1.5; padding-left: 12px; border-left: 3px solid var(--g-mid); }
-  .sub-title small { font-family: var(--font-body); font-size: 13px; font-weight: 400; color: var(--ink-faint); margin-left: 8px; letter-spacing: 0; }
-  .entries { list-style: none; margin-top: 10px; }
-  .entry { display: flex; gap: 18px; padding: 20px 0; border-bottom: 1px solid var(--line); }
-  .entry-cover { width: 84px; height: 122px; flex-shrink: 0; background: var(--g-soft); border: 1px solid var(--line); border-radius: 2px; overflow: hidden; display: flex; align-items: center; justify-content: center; text-decoration: none; }
-  .entry-cover img { width: 100%; height: 100%; object-fit: cover; }
-  .entry-cover .ph { font-family: var(--font-heading); font-size: 28px; color: var(--g-mid); }
+  .sub-sec { margin-top: 40px; }
+  .sub-title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; font-family: var(--font-heading); font-size: 21px; font-weight: 600; letter-spacing: 1px; line-height: 1.5; padding-bottom: 8px; border-bottom: 1px solid var(--ink); }
+  .sub-title .no { font-size: 13px; font-weight: 500; color: var(--accent); letter-spacing: 1px; }
+  .sub-title small { font-family: var(--font-body); font-size: 12px; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; }
+  .entries { list-style: none; }
+  .entry { display: flex; gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+  .entry-no { font-family: var(--font-heading); font-size: 15px; color: var(--accent); width: 1.6em; flex-shrink: 0; line-height: 1.6; }
+  .entry-cover { width: 66px; height: 96px; flex-shrink: 0; background: var(--paper-2); display: block; box-shadow: 0 1px 2px rgba(0,0,0,0.12), 3px 3px 0 -1px var(--paper), 3px 3px 0 0 var(--line); transition: transform .15s; }
+  .entry-cover:hover { transform: translateY(-2px); }
+  .entry-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .entry-body { flex: 1; min-width: 0; }
   .entry-title { display: block; font-family: var(--font-heading); font-size: 18px; font-weight: 600; line-height: 1.6; color: var(--ink); text-decoration: none; }
-  .entry-title:hover { text-decoration: underline; }
+  .entry-title:hover { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
   .entry-meta { font-size: 13px; color: var(--ink-sub); margin-top: 2px; }
-  .entry-live { display: inline-block; font-size: 11px; color: var(--accent); border: 1px solid var(--accent); padding: 0 6px; margin-left: 8px; line-height: 1.6; vertical-align: 1px; border-radius: 2px; }
+  .entry-live { display: inline-block; font-size: 11px; color: var(--accent); border: 1px solid var(--accent); padding: 0 6px; margin-left: 8px; line-height: 1.6; vertical-align: 1px; }
   .entry-sum { font-size: 14px; color: var(--ink-sub); line-height: 1.85; margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  .entry-links { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
-  .entry-links a { display: inline-block; padding: 6px 16px; border-radius: 4px; font-size: 14px; font-weight: 500; text-decoration: none; border: 1px solid var(--link); }
-  .entry-links a.primary { background: var(--link); color: #fff; }
-  .entry-links a:not(.primary) { color: var(--link); background: #fff; }
-  .entry-links a:hover { opacity: 0.85; }
-  .btn-more { display: block; width: 100%; margin-top: 14px; padding: 12px; background: #fff; border: 1px solid var(--line); border-radius: 4px; font-size: 14px; color: var(--link); cursor: pointer; }
+  .entry-links { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 14px; }
+  .entry-links a { text-decoration: none; font-weight: 500; }
+  .entry-links a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .entry-links a::after { content: ' →'; }
+  .sub-foot { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  .btn-more { flex: 1; padding: 12px; background: var(--paper); border: 1px solid var(--line); border-radius: 4px; font-size: 14px; color: var(--link); cursor: pointer; transition: border-color .15s; }
   .btn-more:hover { border-color: var(--link); }
+  .to-index { margin-left: auto; font-size: 12px; color: var(--ink-faint); text-decoration: none; white-space: nowrap; }
+  .to-index:hover { color: var(--link); }
 
-  .pager { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 48px; }
-  .pager a { display: block; padding: 14px 16px; border: 1px solid var(--line); border-radius: 6px; text-decoration: none; color: var(--ink); }
-  .pager a:hover { border-color: var(--link); }
-  .pager small { display: block; font-size: 12px; color: var(--ink-faint); }
-  .pager span { font-family: var(--font-heading); font-size: 16px; font-weight: 600; }
+  .pager { display: grid; grid-template-columns: 1fr 1fr; margin-top: 48px; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--line); }
+  .pager a { display: block; padding: 14px 4px; text-decoration: none; color: var(--ink); }
+  .pager a:hover span { color: var(--link); }
+  .pager small { display: block; font-size: 11px; letter-spacing: 2px; color: var(--accent); }
+  .pager span { font-family: var(--font-heading); font-size: 16px; font-weight: 600; transition: color .15s; }
   .pager .next { text-align: right; grid-column: 2; }
-  .back-all { display: block; margin: 16px auto 0; text-align: center; font-size: 14px; text-decoration: none; }
+  .btn-back { display: inline-block; margin-top: 20px; font-size: 14px; color: var(--link); text-decoration: none; padding: 6px 0; }
 
   .footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-faint); text-align: center; }
   .footer a { color: var(--ink-faint); text-decoration: none; }
-  .to-top { position: fixed; right: 14px; bottom: 18px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: var(--ink-sub); font-size: 18px; cursor: pointer; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08); z-index: 30; }
+  .to-top { position: fixed; right: 14px; bottom: 18px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: var(--ink-sub); font-size: 18px; cursor: pointer; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
   .to-top.show { display: block; }
   button:focus-visible, a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
 
-  @media (max-width: 760px) {
-    .tiles { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  }
   @media (max-width: 480px) {
     .header-inner { padding: 10px 16px; }
     .header-sub { display: none; }
     .container { padding: 0 16px 56px; }
-    .subnav-wrap { margin: 0 -16px; padding: 0 16px; }
-    .masthead { padding: 30px 0 22px; }
-    h1 { font-size: 27px; }
+    .masthead { padding: 26px 0 22px; }
+    h1 { font-size: 28px; letter-spacing: 3px; }
     .lead { font-size: 14px; }
-    .tile-covers { height: 98px; padding-bottom: 10px; }
-    .tile-covers img { width: 46px; height: 67px; }
-    .tile-covers img:nth-child(2) { width: 52px; height: 75px; }
-    .tile-text { padding: 10px 12px 12px; }
-    .tile-name { font-size: 16px; letter-spacing: 0.5px; }
-    .tile-desc { display: none; }
-    .tile-go, .tile-subs { display: none; }
-    .list-head { padding: 18px 16px; }
-    .list-title { font-size: 24px; }
-    .list-desc { font-size: 14px; }
-    .entry { gap: 14px; }
-    .entry-cover { width: 68px; height: 99px; }
+    .stats { gap: 2px 16px; }
+    .stats b { font-size: 19px; }
+    .toc-row { gap: 10px; padding: 15px 4px 15px 2px; }
+    .toc-name { font-size: 18px; }
+    .toc-inner { padding: 0 4px 18px 4px; }
+    .list-no b { font-size: 34px; }
+    .list-title { font-size: 25px; }
+    .sub-index { padding: 14px 14px 10px; }
+    .sub-title { font-size: 19px; }
+    .entry { gap: 12px; }
+    .entry-no { width: 1.3em; }
+    .entry-cover { width: 56px; height: 82px; }
     .entry-title { font-size: 17px; }
-    .entry-links a { padding: 6px 12px; font-size: 13px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
   }
 
   /* おすすめ作品診断の枠：診断ページができるまで非表示（表示に戻すときは、この1行を消す） */
@@ -175,14 +197,15 @@
 
   <div id="top" class="screen active">
     <div class="masthead">
-      <p class="eyebrow">GOLD LIFE ONLINE</p>
+      <p class="issue"><span>GOLD LIFE ONLINE</span><span id="issue"></span></p>
       <h1>ジャンルから探す</h1>
-      <hr class="rule">
-      <p class="lead">読んでみたいジャンルを選んでください。<br>小さなジャンルごとに作品が並んでいます。</p>
-      <p class="stats" id="stats"></p>
+      <p class="lead">気になるジャンルを開くと、その中の小さなジャンルが並びます。</p>
+      <div class="stats" id="stats"></div>
     </div>
 
-    <ol class="tiles" id="tiles"></ol>
+    <p class="sec-label">目次</p>
+    <p class="sec-hint">作品は、よく読まれている順に並んでいます。</p>
+    <ol class="toc" id="toc"></ol>
 
     <div class="cta">
       <p>何を読むか決められない方へ</p>
@@ -192,28 +215,19 @@
     <div class="footer"><a href="https://renaissance-media.jp/" target="_blank" rel="noopener">© ゴールドライフオンライン</a></div>
   </div>
 
-  <div id="list" class="screen tinted">
-    <div class="narrow">
-      <p class="crumb"><a href="#">ジャンルから探す</a> › <span id="crumbName"></span></p>
-      <div class="list-head">
-        <p class="list-no" id="listNo"></p>
-        <h2 class="list-title" id="listTitle"></h2>
-        <p class="list-desc" id="listDesc"></p>
-        <p class="list-count" id="listCount"></p>
-      </div>
+  <div id="list" class="screen">
+    <p class="crumb"><a href="#">目次</a> › <span id="crumbName"></span></p>
+    <div class="list-head">
+      <p class="list-no">GENRE<b id="listNo"></b></p>
+      <h2 class="list-title" id="listTitle"></h2>
+      <p class="list-desc" id="listDesc"></p>
+      <p class="list-count" id="listCount"></p>
     </div>
-    <div class="subnav-wrap">
-      <div class="narrow">
-        <p class="subnav-label">小さなジャンル</p>
-        <ul class="subnav" id="subnav"></ul>
-      </div>
-    </div>
-    <div class="narrow">
-      <div id="listSubs"></div>
-      <nav class="pager" id="pager"></nav>
-      <a class="back-all" href="#">ジャンル一覧に戻る</a>
-      <div class="footer"><a href="https://renaissance-media.jp/" target="_blank" rel="noopener">© ゴールドライフオンライン</a></div>
-    </div>
+    <nav class="sub-index" id="subIndex"></nav>
+    <div id="listSubs"></div>
+    <nav class="pager" id="pager"></nav>
+    <a class="btn-back" href="#">← 目次に戻る</a>
+    <div class="footer"><a href="https://renaissance-media.jp/" target="_blank" rel="noopener">© ゴールドライフオンライン</a></div>
   </div>
 
 </div>
@@ -229,6 +243,7 @@ const COVERS = Object.assign({}, window.COVERS_AUTO || {}, window.COVERS_MANUAL 
 const SITE = 'https://renaissance-media.jp';
 const FIRST_SHOW = 10;
 const BASE_TITLE = document.title;
+const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const no = i => String(i + 1).padStart(2, '0');
 const catUrl = w => SITE + '/category/' + encodeURIComponent(w.c);
@@ -240,141 +255,112 @@ function coverUrl(w) {
   if (/^https?:/.test(h)) return h;
   return COVER_BASE + h[0] + '/' + h[1] + '/240w/img_' + h;
 }
-const $ = id => document.getElementById(id);
 
-// 並び順は「よく読まれている順（累計）」だけにする
+// 並び順は「よく読まれている順（累計）」だけ
 GENRES.forEach(g => g.subs.forEach(s => s.works.sort((a, b) => (b.pv || 0) - (a.pv || 0))));
 
 const total = GENRES.reduce((a, g) => a + g.count, 0);
 const subTotal = GENRES.reduce((a, g) => a + g.subs.length, 0);
-$('stats').textContent = '全' + total.toLocaleString() + '作品／' + GENRES.length + 'ジャンル／' + subTotal + 'の小さなジャンル';
+$('stats').innerHTML = '<div><b>' + total.toLocaleString() + '</b>作品</div><div><b>' + GENRES.length + '</b>ジャンル</div><div><b>' + subTotal + '</b>の小さなジャンル</div>';
+const up = /^(\d{4})-(\d{2})/.exec(DATA.updated || '');
+if (up) $('issue').textContent = up[1] + '年' + (+up[2]) + '月 更新';
 
-// ヘッダーの高さに合わせて、小さなジャンルの帯を止める位置を決める
 const header = $('siteHeader');
-const setHH = () => document.documentElement.style.setProperty('--hh', header.offsetHeight + 'px');
-setHH(); window.addEventListener('resize', setHH);
 
-/* トップ：ジャンルのカード（表紙は、そのジャンルでよく読まれている作品から3冊） */
-function topCovers(g) {
-  const seen = {}, all = [];
-  g.subs.forEach(s => s.works.forEach(w => { if (!seen[w.c]) { seen[w.c] = 1; all.push(w); } }));
-  all.sort((a, b) => (b.pv || 0) - (a.pv || 0));
-  const out = [];
-  for (const w of all) { const u = coverUrl(w); if (u) out.push(u); if (out.length === 3) break; }
-  return out;
+/* 目次 */
+const toc = $('toc');
+toc.innerHTML = GENRES.map((g, i) =>
+  '<li data-i="' + i + '"><button class="toc-row" aria-expanded="false"><span class="toc-no">' + no(i) + '</span><span class="toc-name">' + esc(g.name) + '</span><span class="leader"></span><span class="toc-count">' + g.count + '<small>作品</small></span><span class="toc-mark">›</span></button>' +
+  '<div class="toc-body"><div><div class="toc-inner"><p class="toc-desc">' + esc(g.desc) + '</p><ol class="toc-subs">' +
+  g.subs.map(s => '<li><a href="#' + esc(g.id) + '/' + esc(s.code) + '"><span class="sub-name">' + esc(s.name) + '</span><span class="leader"></span><span class="num">' + s.works.length + '</span></a></li>').join('') +
+  '</ol><a class="toc-all" href="#' + esc(g.id) + '">「' + esc(g.name) + '」の作品をすべて見る</a></div></div></div></li>').join('');
+function setOpen(li, open) {
+  li.classList.toggle('open', open);
+  li.querySelector('.toc-row').setAttribute('aria-expanded', open);
 }
-$('tiles').innerHTML = GENRES.map((g, i) =>
-  '<li><a class="tile tinted" href="#' + esc(g.id) + '" style="--h:' + (+g.hue || 0) + '">' +
-    '<span class="tile-covers">' +
-      topCovers(g).map(u => '<img src="' + esc(u) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">').join('') +
-    '</span>' +
-    '<span class="tile-text"><span class="tile-no">' + no(i) + '</span><span class="tile-name">' + esc(g.name) + '</span>' +
-      '<span class="tile-desc">' + esc(g.desc) + '</span>' +
-      '<span class="tile-foot"><span>' + g.count + '作品<span class="tile-subs">・小さなジャンル' + g.subs.length + '</span></span><span class="tile-go">見る →</span></span>' +
-    '</span></a></li>').join('');
+toc.addEventListener('click', e => {
+  const row = e.target.closest('.toc-row');
+  if (!row) return;
+  const li = row.parentNode;
+  setOpen(li, !li.classList.contains('open'));
+});
 
 /* 作品 */
-function entry(w) {
+function entry(w, i) {
   const u = coverUrl(w);
-  const cover = '<a class="entry-cover" href="' + catUrl(w) + '" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">' +
-    (u ? '<img src="' + esc(u) + '" alt="" loading="lazy" decoding="async" onerror="this.replaceWith(Object.assign(document.createElement(\'span\'),{className:\'ph\',textContent:this.dataset.c}))" data-c="' + esc((w.t || '').charAt(0)) + '">'
-       : '<span class="ph">' + esc((w.t || '').charAt(0)) + '</span>') + '</a>';
-  return '<li class="entry">' + cover + '<div class="entry-body">' +
+  const cover = u ? '<a class="entry-cover" href="' + catUrl(w) + '" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true"><img src="' + esc(u) + '" alt="" loading="lazy" decoding="async" onerror="this.parentNode.remove()"></a>' : '';
+  return '<li class="entry"><span class="entry-no">' + (i + 1) + '</span>' + cover + '<div class="entry-body">' +
     '<a class="entry-title" href="' + catUrl(w) + '" target="_blank" rel="noopener">' + esc(w.t) + '</a>' +
     '<p class="entry-meta">' + esc(w.a) + (w.l ? '<span class="entry-live">連載中</span>' : '') + '</p>' +
     (w.s ? '<p class="entry-sum">' + esc(w.s) + '</p>' : '') +
-    '<p class="entry-links">' + (w.f ? '<a class="primary" href="' + firstUrl(w) + '" target="_blank" rel="noopener">第1回から読む</a>' : '') +
-      '<a href="' + catUrl(w) + '" target="_blank" rel="noopener">記事一覧</a></p>' +
+    '<p class="entry-links">' + (w.f ? '<a href="' + firstUrl(w) + '" target="_blank" rel="noopener">第1回から読む</a>' : '') + '<a href="' + catUrl(w) + '" target="_blank" rel="noopener">記事一覧</a></p>' +
     '</div></li>';
 }
 
 /* ジャンルのページ（URLの # でジャンルを覚えるので、ブラウザの「戻る」も使える） */
-let curGenre = null, lastGenreId = null;
+let curList = null, lastGenre = null;
 function showList(g) {
-  curGenre = g; lastGenreId = g.id;
+  curList = lastGenre = g;
   const gi = GENRES.indexOf(g);
-  $('list').style.setProperty('--h', +g.hue || 0);
   $('crumbName').textContent = g.name;
-  $('listNo').textContent = 'GENRE ' + no(gi);
+  $('listNo').textContent = no(gi);
   $('listTitle').textContent = g.name;
   $('listDesc').textContent = g.desc;
-  $('listCount').textContent = g.count.toLocaleString() + '作品・よく読まれている順に並んでいます';
-  $('subnav').innerHTML = g.subs.map(s => '<li><a href="#' + esc(g.id) + '/' + esc(s.code) + '" data-s="' + esc(s.code) + '">' + esc(s.name) + '<small>' + s.works.length + '</small></a></li>').join('');
-  $('listSubs').innerHTML = g.subs.map(s => {
+  $('listCount').textContent = g.count.toLocaleString() + '作品・' + g.subs.length + 'の小さなジャンル';
+  $('subIndex').innerHTML = '<p class="sub-index-label">このジャンルの目次</p><ol>' + g.subs.map((s, j) =>
+    '<li><a href="#' + esc(g.id) + '/' + esc(s.code) + '" data-s="' + esc(s.code) + '"><span class="no">' + no(gi) + '-' + (j + 1) + '</span><span class="sub-name">' + esc(s.name) + '</span><span class="leader"></span><span class="num">' + s.works.length + '</span></a></li>').join('') + '</ol>';
+  $('listSubs').innerHTML = g.subs.map((s, j) => {
     const rest = s.works.length - FIRST_SHOW;
-    return '<section class="sub-sec" id="sub-' + esc(s.code) + '"><h3 class="sub-title">' + esc(s.name) + '<small>' + s.works.length + '作品</small></h3>' +
+    return '<section class="sub-sec" id="sub-' + esc(s.code) + '"><h3 class="sub-title"><span class="no">' + no(gi) + '-' + (j + 1) + '</span>' + esc(s.name) + '<small>' + s.works.length + '作品</small></h3>' +
       '<ol class="entries">' + s.works.slice(0, FIRST_SHOW).map(entry).join('') + '</ol>' +
-      (rest > 0 ? '<button class="btn-more" data-s="' + esc(s.code) + '">残り' + rest + '作品を表示</button>' : '') + '</section>';
+      '<div class="sub-foot">' + (rest > 0 ? '<button class="btn-more" data-s="' + esc(s.code) + '">残り' + rest + '作品を表示</button>' : '') +
+      '<a class="to-index" href="#subIndex">このジャンルの目次へ ↑</a></div></section>';
   }).join('');
   const prev = GENRES[gi - 1], next = GENRES[gi + 1];
   $('pager').innerHTML =
-    (prev ? '<a class="prev" href="#' + esc(prev.id) + '"><small>← 前のジャンル</small><span>' + esc(prev.name) + '</span></a>' : '') +
-    (next ? '<a class="next" href="#' + esc(next.id) + '"><small>次のジャンル →</small><span>' + esc(next.name) + '</span></a>' : '');
+    (prev ? '<a class="prev" href="#' + esc(prev.id) + '"><small>← 前のジャンル</small><span>' + no(gi - 1) + '　' + esc(prev.name) + '</span></a>' : '') +
+    (next ? '<a class="next" href="#' + esc(next.id) + '"><small>次のジャンル →</small><span>' + no(gi + 1) + '　' + esc(next.name) + '</span></a>' : '');
   document.title = g.name + '｜' + BASE_TITLE;
   $('top').classList.remove('active');
   $('list').classList.add('active');
-  markSub(g.subs[0] ? g.subs[0].code : "");
 }
-$('listSubs').addEventListener('click', e => {
-  const b = e.target.closest('.btn-more');
-  if (!b || !curGenre) return;
-  const s = curGenre.subs.find(x => x.code === b.dataset.s);
-  b.previousElementSibling.insertAdjacentHTML('beforeend', s.works.slice(FIRST_SHOW).map(entry).join(''));
-  b.remove();
-});
-
-// 小さなジャンルの帯：押すとその見出しへ。いま見ている見出しに色をつける
-function jumpTo(code, smooth) {
-  const el = $('sub-' + code);
+function jumpTo(el, smooth) {
   if (!el) return;
-  const y = el.getBoundingClientRect().top + window.scrollY - parseFloat(getComputedStyle(el).scrollMarginTop || 0);
+  const y = el.getBoundingClientRect().top + window.scrollY - header.offsetHeight - 12;
   window.scrollTo({ top: Math.max(0, y), behavior: smooth ? 'smooth' : 'auto' });
 }
-$('subnav').addEventListener('click', e => {
-  const a = e.target.closest('a[data-s]');
+// ページの中の移動（小さなジャンルへ／目次へ）は、履歴を増やさずにスクロールだけする
+$('list').addEventListener('click', e => {
+  const more = e.target.closest('.btn-more');
+  if (more) {
+    const s = curList.subs.find(x => x.code === more.dataset.s);
+    more.closest('.sub-sec').querySelector('.entries').insertAdjacentHTML('beforeend', s.works.slice(FIRST_SHOW).map((w, i) => entry(w, i + FIRST_SHOW)).join(''));
+    more.remove();
+    return;
+  }
+  const a = e.target.closest('.sub-index a, .to-index');
   if (!a) return;
   e.preventDefault();
-  history.replaceState(null, '', a.getAttribute('href'));
-  jumpTo(a.dataset.s, true);
+  if (a.dataset.s) { history.replaceState(null, '', a.getAttribute('href')); jumpTo($('sub-' + a.dataset.s), true); }
+  else jumpTo($('subIndex'), true);
 });
-function markSub(code) {
-  $('subnav').querySelectorAll('a').forEach(a => {
-    const on = a.dataset.s === code;
-    if (on && !a.classList.contains('on')) {
-      const nav = $('subnav'), li = a.parentNode;
-      nav.scrollLeft = li.offsetLeft - nav.offsetLeft - (nav.clientWidth - li.offsetWidth) / 2;
-    }
-    a.classList.toggle('on', on);
-  });
-}
-let ticking = false;
-function updateSub() {
-  ticking = false;
-  if (!curGenre) return;
-  const line = header.offsetHeight + 110;
-  let cur = '';
-  document.querySelectorAll('.sub-sec').forEach(s => { if (s.getBoundingClientRect().top <= line) cur = s.id.slice(4); });
-  markSub(cur);
-}
-window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(updateSub); } }, { passive: true });
 
 function showTop() {
-  curGenre = null;
+  curList = null;
   document.title = BASE_TITLE;
   $('list').classList.remove('active');
   $('top').classList.add('active');
-  // 見ていたジャンルのカードの位置に戻る
-  const a = lastGenreId && document.querySelector('.tile[href="#' + lastGenreId + '"]');
-  if (a) { a.scrollIntoView({ block: 'center' }); a.focus({ preventScroll: true }); }
+  // 見ていたジャンルを開いた状態で、目次のその位置に戻る
+  const li = lastGenre && toc.querySelector('li[data-i="' + GENRES.indexOf(lastGenre) + '"]');
+  if (li) { setOpen(li, true); jumpTo(li, false); }
   else window.scrollTo(0, 0);
 }
-
 function route() {
   const [gid, sub] = decodeURIComponent(location.hash.slice(1)).split('/');
   const g = GENRES.find(x => x.id === gid);
   if (!g) { showTop(); return; }
-  if (g !== curGenre) { showList(g); window.scrollTo(0, 0); }
-  if (sub) requestAnimationFrame(() => jumpTo(sub, false));
+  if (g !== curList) { showList(g); window.scrollTo(0, 0); }
+  if (sub) requestAnimationFrame(() => jumpTo($('sub-' + sub), false));
 }
 window.addEventListener('hashchange', route);
 route();
