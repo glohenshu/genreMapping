@@ -287,6 +287,20 @@
     .entry-title { font-size: 17px; }
   }
 
+  /* 検索の結果（ヘッダーの「検索」から。このページの作品だけを探す） */
+  .sr-where { font-size: 13px; color: var(--accent); margin-top: 2px; }
+  .sr-section { margin-top: 28px; }
+  .sr-label { font-family: var(--font-heading); font-size: 18px; font-weight: 600; letter-spacing: 1px; padding-bottom: 8px; border-bottom: 1px solid var(--ink); }
+  .sr-label small { font-family: var(--font-body); font-size: 13px; font-weight: 400; color: var(--ink-faint); margin-left: 8px; }
+  .sr-subs { margin-top: 4px; }
+  .sr-none { margin-top: 28px; font-size: 15px; color: var(--ink-sub); line-height: 1.9; }
+  /* GLO の記事全体の検索へ進む道（入力欄の下と、結果のいちばん下） */
+  .sr-glo { margin-top: 32px; padding: 20px; background: var(--paper-2); border-radius: 4px; }
+  .sr-glo p { font-size: 14px; color: var(--ink-sub); }
+  .sr-glo a { display: inline-block; margin-top: 6px; font-size: 15px; font-weight: 500; }
+  .gh-search-more { max-width: 600px; margin: 8px auto 0; font-size: 14px; }
+  .gh-search-more a { color: var(--link); font-weight: 500; }
+
   /* おすすめ作品診断の枠：診断ページができるまで非表示（表示に戻すときは、この1行を消す） */
   .cta { display: none !important; }
 </style>
@@ -307,11 +321,12 @@
     <button class="gh-search-btn" id="ghSearchBtn" type="button" aria-expanded="false" aria-controls="ghSearch"><span>検索</span></button>
   </div>
   <div class="gh-panel" id="ghSearch" hidden>
-    <form class="gh-search" action="https://renaissance-media.jp/list/search" method="get" target="_blank" role="search">
-      <input type="text" name="fulltext" placeholder="検索する" aria-label="GLO の記事を検索">
+    <form class="gh-search" id="pageSearch" role="search">
+      <input type="search" name="q" placeholder="作品名・著者名・言葉で探す" aria-label="ジャンル一覧の作品を検索">
       <button type="submit" aria-label="検索"></button>
     </form>
-    <p class="gh-search-note">探したいキーワード / 著者名 / 書籍名などを入力して検索してください。<br>複数キーワードで調べる場合は、単語ごとにスペースで区切って検索してください。</p>
+    <p class="gh-search-note">このページに載っている作品から、作品名・著者名・内容紹介で探します。<br>複数の言葉で調べる場合は、言葉ごとにスペースで区切ってください。</p>
+    <p class="gh-search-more"><a href="https://renaissance-media.jp/list/search" id="gloMore" target="_blank" rel="noopener">GLO の記事全体から探す →</a></p>
   </div>
   <div class="gh-panel gh-menu" id="ghMenu" hidden>
     <ul class="gh-menu-list">
@@ -352,6 +367,15 @@
       <div class="list-count-row"><p class="list-count" id="listCount"></p><div class="view-switch" id="viewSwitch" role="group" aria-label="表示"><button type="button" data-v="list" aria-pressed="true">☰ リスト</button><button type="button" data-v="block" aria-pressed="false">▦ ブロック</button></div></div>
     </div>
     <div id="listSubs"></div>
+  </div>
+
+  <div id="search" class="screen">
+    <div class="list-top"><nav class="crumb" aria-label="現在地"><a href="#" id="srBack">ジャンル一覧</a><span class="crumb-sep" aria-hidden="true">›</span><span>検索結果</span></nav></div>
+    <div class="list-head">
+      <h2 class="list-title" id="srTitle"></h2>
+      <p class="list-count" id="srCount"></p>
+    </div>
+    <div id="srBody"></div>
   </div>
 
 </div>
@@ -515,17 +539,17 @@ function showList(g, jumpSub, keepScroll) {
   };
   applyView();
   if (keepScroll) return;
-  document.getElementById('top').classList.remove('active');
-  document.getElementById('list').classList.add('active');
+  showScreen('list');
   // 目次の小分類から来たときは、その小分類を開いて見せる
   if (jumpSub) requestAnimationFrame(() => { const el = document.getElementById('sub-' + jumpSub); if (el) { setShut(el, false); el.scrollIntoView(); } });
   else window.scrollTo(0, 0);
 }
+/* 画面の切り替え：目次・ジャンルのページ・検索結果のどれか1つを出す */
+function showScreen(id) { ['top', 'list', 'search'].forEach(x => document.getElementById(x).classList.toggle('active', x === id)); }
 function goBack() {
   const gi = GENRES.indexOf(curList);
   curList = null;
-  document.getElementById('list').classList.remove('active');
-  document.getElementById('top').classList.add('active');
+  showScreen('top');
   // 見ていたジャンルを開いた状態で、目次のその位置に戻る
   const li = toc.querySelector('li[data-i="' + gi + '"]');
   if (li) {
@@ -654,6 +678,61 @@ document.addEventListener('keydown', e => {
   setPanel('ghSearchBtn', 'ghSearch', false);
   setPanel('ghMenuBtn', 'ghMenu', false);
 });
+
+/* ヘッダーの「検索」：このページの作品から、作品名・著者名・内容紹介・ジャンル名で探す
+   - ひらがなとカタカナ、全角と半角は区別しない。スペースで区切ると、すべての言葉を含む作品
+   - 主と副の2か所に載る作品は1つにまとめる。作品名に当たったもの → 著者名 → そのほかの順、同じなら読まれている順 */
+const toKana = s => (s || '').normalize('NFKC').toLowerCase().replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60));
+const POOL = new Map();
+GENRES.forEach(g => g.subs.forEach(s => s.works.forEach(w => {
+  let p = POOL.get(w.c);
+  if (!p) { p = { w, places: [] }; POOL.set(w.c, p); }
+  p.places.push(g.name + ' › ' + s.name);
+})));
+POOL.forEach(p => { p.key = toKana([p.w.t, p.w.a, p.w.s, p.places.join(' ')].join(' ')); p.tk = toKana(p.w.t); p.ak = toKana(p.w.a); });
+const SR_FIRST = 20;
+let srHits = [];
+function runSearch(q) {
+  q = (q || '').trim();
+  if (!q) return;
+  const terms = toKana(q).split(/\s+/).filter(Boolean);
+  srHits = [...POOL.values()].filter(p => terms.every(t => p.key.includes(t)))
+    .map(p => ({ p, rank: terms.some(t => p.tk.includes(t)) ? 0 : terms.some(t => p.ak.includes(t)) ? 1 : 2 }))
+    .sort((x, y) => x.rank - y.rank || (y.p.w.pv || 0) - (x.p.w.pv || 0)).map(x => x.p);
+  const subHits = [];
+  GENRES.forEach((g, gi) => g.subs.forEach(s => { const k = toKana(g.name + ' ' + s.name); if (terms.every(t => k.includes(t))) subHits.push({ g, gi, s }); }));
+  document.getElementById('srTitle').textContent = '「' + q + '」の検索結果';
+  document.getElementById('srCount').textContent = srHits.length ? srHits.length.toLocaleString() + '作品' : '';
+  let h = '';
+  if (subHits.length) h += '<section class="sr-section"><h3 class="sr-label">小さなジャンル</h3><ul class="toc-subs sr-subs">' +
+    subHits.map(x => '<li><a href="#" data-g="' + x.gi + '" data-s="' + x.s.code + '">' + esc(x.g.name) + ' › ' + esc(x.s.name) + '<small>' + x.s.works.length + '作品</small><span class="go">見る →</span></a></li>').join('') + '</ul></section>';
+  if (srHits.length) h += '<section class="sr-section"><h3 class="sr-label">作品<small>' + srHits.length.toLocaleString() + '作品</small></h3><ol class="entries" id="srList">' + srHits.slice(0, SR_FIRST).map(srEntry).join('') + '</ol>' +
+    (srHits.length > SR_FIRST ? '<button class="btn-more" id="srMore">残り' + (srHits.length - SR_FIRST) + '作品を表示</button>' : '') + '</section>';
+  if (!srHits.length && !subHits.length) h += '<p class="sr-none">このページの作品には、「' + esc(q) + '」に当てはまるものが見つかりませんでした。<br>言葉を短くするか、ひらがな・カタカナを変えて、もう一度お試しください。</p>';
+  h += '<div class="sr-glo"><p>' + (srHits.length ? 'ほかの記事も探したいときは' : 'GLO の記事全体からも探せます') + '</p><a href="' + gloSearchUrl(q) + '" target="_blank" rel="noopener">「' + esc(q) + '」を GLO の記事全体から探す →</a></div>';
+  document.getElementById('srBody').innerHTML = h;
+  showScreen('search');
+  window.scrollTo(0, 0);
+}
+// 結果の作品には、どのジャンルの作品かを添える
+function srEntry(p) {
+  return entry(p.w).replace('<p class="entry-meta">', '<p class="sr-where">' + p.places.map(esc).join('／') + '</p><p class="entry-meta">');
+}
+document.getElementById('srBody').onclick = e => {
+  const m = e.target.closest('#srMore');
+  if (m) { document.getElementById('srList').insertAdjacentHTML('beforeend', srHits.slice(SR_FIRST).map(srEntry).join('')); m.remove(); return; }
+  const a = e.target.closest('a[data-g]');
+  if (a) { e.preventDefault(); showList(GENRES[+a.dataset.g], a.dataset.s); }
+};
+document.getElementById('srBack').onclick = e => { e.preventDefault(); showScreen('top'); window.scrollTo(0, 0); };
+document.getElementById('pageSearch').onsubmit = e => {
+  e.preventDefault();
+  setPanel('ghSearchBtn', 'ghSearch', false);
+  runSearch(e.target.q.value);
+};
+// GLO 本サイトの検索へ：入力した言葉のまま進む（空なら検索ページだけ開く）
+const gloSearchUrl = q => 'https://renaissance-media.jp/list/search' + (q ? '?fulltext=' + encodeURIComponent(q) : '');
+document.getElementById('gloMore').onclick = e => { e.currentTarget.href = gloSearchUrl(document.querySelector('#pageSearch input').value.trim()); };
 
 const toTop = document.getElementById('toTop');
 window.addEventListener('scroll', () => toTop.classList.toggle('show', window.scrollY > 800), { passive: true });
