@@ -11,7 +11,7 @@
 <meta property="og:site_name" content="ゴールドライフオンライン">
 <meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Shippori+Mincho:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Shippori+Mincho:wght@500;600&display=swap" rel="stylesheet">
 <style>
   /* 案3：雑誌の目次型（白地・文字が主役・装飾は最小限） */
   :root {
@@ -32,11 +32,52 @@
   a { color: var(--link); }
   button { font-family: inherit; }
 
-  header { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,0.96); border-bottom: 1px solid var(--line); backdrop-filter: blur(8px); }
-  .header-inner { max-width: 720px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 12px; }
-  .header-logo { height: 18px; display: block; }
-  .header-sub { font-size: 12px; color: var(--ink-sub); letter-spacing: 1px; }
-  .header-home { margin-left: auto; font-size: 13px; text-decoration: none; }
+  /* ヘッダー：GLO 本サイト（renaissance-media.jp）のヘッダーに合わせる。パソコンとスマホで形が変わる */
+  .g-header { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid #ececec; }
+  .gh-inner { position: relative; display: flex; align-items: center; height: 64px; padding: 0 72px 0 40px; }
+  .gh-logo { margin-right: auto; }
+  .gh-logo img { display: block; width: 190px; height: 40px; }
+  .gh-logo:hover, .gh-nav a:hover, .gh-genkun:hover, .gh-search-btn:hover { opacity: .7; }
+  .gh-nav { display: flex; gap: 40px; margin-right: 40px; }
+  .gh-nav a { position: relative; padding-left: 22px; font-size: 14px; font-weight: 700; color: #2b2b2b; text-decoration: none; white-space: nowrap; }
+  .gh-nav a::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 20px; height: 20px; margin: auto 0; background-size: cover; }
+  .gh-nav .ranking { padding-left: 20px; }
+  .gh-nav .ranking::before { background-image: url(https://renaissance-media.jp/common/glo/images/icon/heading-crown.svg); }
+  .gh-nav .latest { padding-left: 27px; }
+  .gh-nav .latest::before { width: 22px; height: 22px; background-image: url(https://renaissance-media.jp/common/glo/images/icon/heading-new.svg); }
+  .gh-nav .book { padding-left: 30px; }
+  .gh-nav .book::before { width: 22px; height: 22px; background-image: url(https://renaissance-media.jp/common/glo/images/icon/heading-book2.svg); }
+  .gh-nav .event::before { background-image: url(https://renaissance-media.jp/common/glo/images/icon/heading-flag.svg); }
+  .gh-genkun { position: relative; margin-right: 32px; padding: 7px 30px; border: 1px solid #2b2b2b; border-radius: 20px; font-size: 14px; font-weight: 700; color: #2b2b2b; text-decoration: none; white-space: nowrap; }
+  .gh-genkun::before { content: ''; position: absolute; top: 0; right: 12px; bottom: 0; width: 12px; height: 10px; margin: auto 0; background: url(https://renaissance-media.jp/common/glo/images/icon/external-link.svg) no-repeat center / contain; }
+  .gh-genkun img { position: absolute; bottom: 3px; left: -10px; width: 32px; height: 46px; }
+  .gh-search-btn { position: absolute; z-index: 1; top: 0; right: 0; width: 72px; height: 72px; border: 0; border-bottom-left-radius: 20px; background: #ce1a1a url(https://renaissance-media.jp/common/glo/images/icon/header-search.svg) no-repeat center 14px; cursor: pointer; }
+  .gh-search-btn[aria-expanded="true"] { background-image: url(https://renaissance-media.jp/common/glo/images/icon/header-search-close.svg); }
+  .gh-search-btn span { position: absolute; top: 41px; right: 0; left: 0; text-align: center; font-size: 12px; color: #fff; }
+  .gh-menu-btn { display: none; }
+  .gh-panel { position: absolute; left: 0; right: 0; top: 100%; background: #f2f2f2; padding: 28px 16px; }
+  .gh-panel[hidden] { display: none; }
+  .gh-search { display: flex; max-width: 600px; margin: 0 auto; background: #fff; border: 1px solid #c4c4c4; border-radius: 4px; overflow: hidden; }
+  .gh-search input { flex: 1; min-width: 0; border: 0; padding: 12px 14px; font-family: var(--font-body); font-size: 16px; }
+  .gh-search button { width: 52px; border: 0; background: #ce1a1a url(https://renaissance-media.jp/common/glo/images/icon/header-search.svg) no-repeat center / 18px 18px; cursor: pointer; }
+  .gh-search-note { max-width: 600px; margin: 10px auto 0; font-size: 12px; line-height: 1.8; color: #555; }
+  .gh-menu { background: #fff; padding: 8px 20px 24px; max-height: calc(100vh - 60px); overflow-y: auto; }
+  .gh-menu-list { list-style: none; }
+  .gh-menu-list li { border-bottom: 1px solid #c4c4c4; }
+  .gh-menu-list li:first-child { border-top: 1px solid #c4c4c4; }
+  .gh-menu-list a { position: relative; display: block; padding: 17px 0; text-align: center; font-weight: 700; color: #2b2b2b; text-decoration: none; }
+  .gh-menu-list a::after { content: ''; position: absolute; top: 0; right: 21px; bottom: 0; width: 6px; height: 6px; margin: auto 0; transform: rotate(135deg); border-top: 1px solid #2b2b2b; border-left: 1px solid #2b2b2b; }
+  .gh-menu .gh-genkun { display: block; width: fit-content; margin: 24px auto 0; }
+  @media (max-width: 999px) {
+    .gh-inner { height: 60px; padding: 0; justify-content: space-between; }
+    .gh-nav, .gh-inner > .gh-genkun { display: none; }
+    .gh-search-btn { position: relative; order: -1; flex-shrink: 0; width: 60px; height: 60px; border-radius: 0; background-position: center 13px; background-size: 18px 18px; }
+    .gh-search-btn span { top: 32px; }
+    .gh-logo { margin: 0 auto; }
+    .gh-logo img { width: auto; height: 38px; }
+    .gh-menu-btn { display: block; flex-shrink: 0; width: 60px; height: 60px; border: 0; background: #fff url(https://renaissance-media.jp/common/glo/images/icon/header-menu.svg) no-repeat center; cursor: pointer; }
+    .gh-menu-btn[aria-expanded="true"] { background-image: url(https://renaissance-media.jp/common/glo/images/icon/header-menu-close.svg); }
+  }
 
   .container { max-width: 720px; margin: 0 auto; padding: 0 20px 64px; }
   .screen { display: none; }
@@ -208,8 +249,6 @@
   button:focus-visible, a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
 
   @media (max-width: 480px) {
-    .header-inner { padding: 10px 16px; }
-    .header-sub { display: none; }
     .container { padding: 0 16px 56px; }
     .masthead { padding: 28px 0 22px; }
     h1 { font-size: 26px; }
@@ -227,11 +266,35 @@
 </head>
 <body>
 
-<header>
-  <div class="header-inner">
-    <img class="header-logo" src="https://renaissance-media.jp/common/glo/images/logo.svg" alt="GLO">
-    <span class="header-sub">ジャンルから探す</span>
-    <a class="header-home" href="https://renaissance-media.jp/" target="_blank" rel="noopener">GLOトップへ →</a>
+<header class="g-header" id="siteHeader">
+  <div class="gh-inner">
+    <a class="gh-logo" href="https://renaissance-media.jp/" target="_blank" rel="noopener"><img src="https://renaissance-media.jp/common/glo/images/logo.svg" width="190" height="40" alt="ゴールドライフオンライン"></a>
+    <nav class="gh-nav" aria-label="GLO のメニュー">
+      <a class="ranking" href="https://renaissance-media.jp/list/ranking" target="_blank" rel="noopener">ランキング</a>
+      <a class="latest" href="https://renaissance-media.jp/category/glo-articles" target="_blank" rel="noopener">新着記事</a>
+      <a class="book" href="https://renaissance-media.jp/ud/books" target="_blank" rel="noopener">書籍一覧</a>
+      <a class="event" href="https://renaissance-media.jp/category/event" target="_blank" rel="noopener">コンテスト一覧</a>
+    </nav>
+    <a class="gh-genkun" href="https://renaissance-media.jp/articles/-/15246" target="_blank" rel="noopener"><img src="https://renaissance-media.ismcdn.jp/common/glo/images/genkun/header-icon.svg" width="32" height="46" alt="">幻くんの部屋</a>
+    <button class="gh-menu-btn" id="ghMenuBtn" type="button" aria-expanded="false" aria-controls="ghMenu" aria-label="メニュー"></button>
+    <button class="gh-search-btn" id="ghSearchBtn" type="button" aria-expanded="false" aria-controls="ghSearch"><span>検索</span></button>
+  </div>
+  <div class="gh-panel" id="ghSearch" hidden>
+    <form class="gh-search" action="https://renaissance-media.jp/list/search" method="get" target="_blank" role="search">
+      <input type="text" name="fulltext" placeholder="検索する" aria-label="GLO の記事を検索">
+      <button type="submit" aria-label="検索"></button>
+    </form>
+    <p class="gh-search-note">探したいキーワード / 著者名 / 書籍名などを入力して検索してください。<br>複数キーワードで調べる場合は、単語ごとにスペースで区切って検索してください。</p>
+  </div>
+  <div class="gh-panel gh-menu" id="ghMenu" hidden>
+    <ul class="gh-menu-list">
+      <li><a href="https://renaissance-media.jp/list/ranking" target="_blank" rel="noopener">ランキング</a></li>
+      <li><a href="https://renaissance-media.jp/category/glo-articles" target="_blank" rel="noopener">新着記事</a></li>
+      <li><a href="https://renaissance-media.jp/ud/books" target="_blank" rel="noopener">書籍一覧</a></li>
+      <li><a href="https://renaissance-media.jp/category/event" target="_blank" rel="noopener">コンテスト一覧</a></li>
+      <li><a href="https://renaissance-media.jp/list/about" target="_blank" rel="noopener">このサイトについて</a></li>
+    </ul>
+    <a class="gh-genkun" href="https://renaissance-media.jp/articles/-/15246" target="_blank" rel="noopener"><img src="https://renaissance-media.ismcdn.jp/common/glo/images/genkun/header-icon.svg" width="32" height="46" alt="">幻くんの部屋</a>
   </div>
 </header>
 
@@ -521,6 +584,28 @@ document.getElementById('drawerList').onclick = e => {
 };
 
 document.getElementById('crumbBack').onclick = e => { e.preventDefault(); goBack(); };
+/* ヘッダーの「検索」と「メニュー」：押すと下に開く。もう一度押すか Esc キーで閉じる */
+function setPanel(btnId, panelId, open) {
+  document.getElementById(btnId).setAttribute('aria-expanded', open);
+  document.getElementById(panelId).hidden = !open;
+}
+document.getElementById('ghSearchBtn').onclick = () => {
+  const open = document.getElementById('ghSearch').hidden;
+  setPanel('ghMenuBtn', 'ghMenu', false);
+  setPanel('ghSearchBtn', 'ghSearch', open);
+  if (open) document.querySelector('#ghSearch input').focus();
+};
+document.getElementById('ghMenuBtn').onclick = () => {
+  const open = document.getElementById('ghMenu').hidden;
+  setPanel('ghSearchBtn', 'ghSearch', false);
+  setPanel('ghMenuBtn', 'ghMenu', open);
+};
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  setPanel('ghSearchBtn', 'ghSearch', false);
+  setPanel('ghMenuBtn', 'ghMenu', false);
+});
+
 const toTop = document.getElementById('toTop');
 window.addEventListener('scroll', () => toTop.classList.toggle('show', window.scrollY > 800), { passive: true });
 toTop.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
