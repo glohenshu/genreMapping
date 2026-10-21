@@ -55,7 +55,7 @@
   .toc { list-style: none; margin-top: 16px; }
   .toc > li { border-bottom: 1px solid var(--line); }
   .toc-row { width: 100%; display: flex; align-items: baseline; gap: 14px; padding: 16px 2px; background: none; border: 0; text-align: left; cursor: pointer; color: var(--ink); }
-  .toc-no { font-family: var(--font-heading); font-size: 15px; color: var(--accent); width: 1.6em; flex-shrink: 0; }
+  .toc-no { font-size: 12px; color: var(--accent); width: 1.6em; flex-shrink: 0; }
   .toc-name { font-family: var(--font-heading); font-size: 20px; font-weight: 600; letter-spacing: 1px; }
   .toc-count { margin-left: auto; font-size: 13px; color: var(--ink-faint); white-space: nowrap; }
   /* 開け閉めの印：閉じているとき＋、開いているとき− */
@@ -103,7 +103,7 @@
   /* ジャンルの作品一覧 */
   .btn-back { margin-top: 20px; background: none; border: 0; font-size: 14px; color: var(--link); cursor: pointer; padding: 6px 0; }
   .list-head { padding: 14px 0 20px; border-bottom: 2px solid var(--ink); }
-  .list-no { font-family: var(--font-heading); font-size: 14px; color: var(--accent); letter-spacing: 2px; }
+  .list-no { font-size: 13px; color: var(--accent); }
   .list-title { font-family: var(--font-heading); font-size: 28px; font-weight: 600; letter-spacing: 2px; line-height: 1.5; }
   .list-desc { font-size: 15px; color: var(--ink-sub); margin-top: 8px; }
   .list-count { font-size: 13px; color: var(--ink-faint); margin-top: 6px; }
@@ -260,7 +260,7 @@
   <div id="list" class="screen">
     <div class="list-top"><nav class="crumb" aria-label="現在地"><a href="#" id="crumbBack">ジャンル一覧</a><span class="crumb-sep" aria-hidden="true">›</span><span id="crumbNow"></span></nav><button class="genre-menu genre-menu-icon" id="genreMenu" type="button" aria-label="ジャンル一覧" title="ジャンル一覧">☰</button></div>
     <div class="list-head">
-      <p class="list-no" id="listNo"></p>
+      <p class="list-no" id="listNo" aria-hidden="true"></p>
       <h2 class="list-title" id="listTitle"></h2>
       <p class="list-desc" id="listDesc"></p>
       <div class="list-count-row"><p class="list-count" id="listCount"></p><div class="view-switch" id="viewSwitch" role="group" aria-label="表示"><button type="button" data-v="list" aria-pressed="true">☰ リスト</button><button type="button" data-v="block" aria-pressed="false">▦ ブロック</button></div></div>
@@ -299,7 +299,8 @@ const COVERS = Object.assign({}, window.COVERS_AUTO || {}, window.COVERS_MANUAL 
 const SITE = 'https://renaissance-media.jp';
 const FIRST_SHOW = 10;
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const no = i => String(i + 1).padStart(2, '0');
+// 大分類の印：番号は順位に見えるので使わず、白抜きのひし形にする
+const no = () => '◇';
 const catUrl = w => SITE + '/category/' + encodeURIComponent(w.c);
 const firstUrl = w => w.f ? SITE + '/articles/-/' + w.f : '';
 const COVER_BASE = 'https://renaissance-media.ismcdn.jp/mwimgs/';
@@ -322,7 +323,7 @@ GENRES.forEach(g => g.subs.forEach(s => { s.name = s.name.replace(/（[^）]*）
 /* 目次 */
 const toc = document.getElementById('toc');
 toc.innerHTML = GENRES.map((g, i) =>
-  '<li data-i="' + i + '"><button class="toc-row" aria-expanded="false"><span class="toc-no">' + no(i) + '</span><span class="toc-name">' + esc(g.name) + '</span><span class="toc-count">' + g.count + '作品</span><span class="toc-mark" aria-hidden="true"></span></button>' +
+  '<li data-i="' + i + '"><button class="toc-row" aria-expanded="false"><span class="toc-no" aria-hidden="true">' + no(i) + '</span><span class="toc-name">' + esc(g.name) + '</span><span class="toc-count">' + g.count + '作品</span><span class="toc-mark" aria-hidden="true"></span></button>' +
   '<div class="toc-body"><p class="toc-desc">' + esc(g.desc) + '</p><ul class="toc-subs">' +
   g.subs.map(s => '<li><a href="#" data-s="' + s.code + '">' + esc(s.name) + '<small>' + s.works.length + '作品</small><span class="go">見る →</span></a></li>').join('') +
   '</ul><div class="toc-foot"><a class="toc-all" href="#">「' + esc(g.name) + '」の作品をすべて見る</a><button class="toc-close" type="button" aria-label="閉じる">−</button></div></div></li>').join('');
