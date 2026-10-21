@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ジャンル一覧｜ゴールドライフオンライン</title>
-<meta name="description" content="ゴールドライフオンライン（GLO）の作品を、ジャンルと小さなジャンルから探せます。">
+<meta name="description" content="ゴールドライフオンライン（GLO）の作品を、ジャンルとテーマから探せます。">
 <meta property="og:title" content="ジャンル一覧｜ゴールドライフオンライン">
 <meta property="og:description" content="GLOの作品をジャンルから探せます。">
 <meta property="og:type" content="website">
@@ -350,7 +350,7 @@
     <div class="masthead">
       <p class="eyebrow">GOLD LIFE ONLINE</p>
       <h1>ジャンル一覧</h1>
-      <p class="lead">気になるジャンルを開くと、その中の小さなジャンルが並びます。</p>
+      <p class="lead">気になるジャンルを開くと、その中のテーマが並びます。</p>
       <p class="stats" id="stats"></p>
     </div>
 
@@ -449,11 +449,11 @@ function coverUrl(w) {
 // 主と副の2か所に載る作品も1作品と数える（DATA.total は毎月の自動更新が入れる）
 const total = DATA.total || GENRES.reduce((a, g) => a + g.count, 0);
 const subTotal = GENRES.reduce((a, g) => a + g.subs.length, 0);
-document.getElementById('stats').textContent = '全' + total.toLocaleString() + '作品／' + GENRES.length + 'ジャンル／' + subTotal + 'の小さなジャンル';
+document.getElementById('stats').textContent = '全' + total.toLocaleString() + '作品／' + GENRES.length + 'ジャンル／' + subTotal + 'のテーマ';
 
 /* 並び順は「よく読まれている順（累計）」だけ */
 GENRES.forEach(g => g.subs.forEach(s => s.works.sort((a, b) => (b.pv || 0) - (a.pv || 0))));
-/* 小さなジャンル名の括弧書き（分類のための補足）は、読者には見せない */
+/* テーマ名の括弧書き（分類のための補足）は、読者には見せない */
 GENRES.forEach(g => g.subs.forEach(s => { s.name = s.name.replace(/（[^）]*）/g, ''); }));
 
 /* 目次 */
@@ -710,7 +710,7 @@ function runSearch(q) {
   document.getElementById('srTitle').textContent = '「' + q + '」の検索結果';
   document.getElementById('srCount').textContent = srHits.length ? srHits.length.toLocaleString() + '作品' : '';
   let h = '';
-  if (subHits.length) h += '<section class="sr-section"><h3 class="sr-label">小さなジャンル</h3><ul class="toc-subs sr-subs">' +
+  if (subHits.length) h += '<section class="sr-section"><h3 class="sr-label">テーマ</h3><ul class="toc-subs sr-subs">' +
     subHits.map(x => '<li>' + subLink(x.g, x.s, '<span>' + esc(x.s.name) + '<span class="sr-genre">' + esc(x.g.name) + '</span></span><small>' + x.s.works.length + '作品</small><span class="go">見る →</span>') + '</li>').join('') + '</ul></section>';
   if (srHits.length) h += '<section class="sr-section"><h3 class="sr-label">作品<small>' + srHits.length.toLocaleString() + '作品</small></h3><ol class="entries" id="srList">' + srHits.slice(0, SR_FIRST).map(srEntry).join('') + '</ol>' +
     (srHits.length > SR_FIRST ? '<button class="btn-more" id="srMore">残り' + (srHits.length - SR_FIRST) + '作品を表示</button>' : '') + '</section>';
