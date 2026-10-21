@@ -11,7 +11,7 @@
 <meta property="og:site_name" content="ゴールドライフオンライン">
 <meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Shippori+Mincho:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@700&family=Shippori+Mincho:wght@500;600&display=swap" rel="stylesheet">
 <style>
   /* 案3：雑誌の目次型（白地・文字が主役・装飾は最小限） */
   :root {
@@ -242,8 +242,35 @@
   .drawer-list a:hover, .drawer-list a:active { background: var(--paper-2); }
   body.drawer-open { overflow: hidden; }
 
-  .footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-faint); text-align: center; }
-  .footer a { color: var(--ink-faint); text-decoration: none; }
+  /* フッター：GLO 本サイト（renaissance-media.jp）のフッターに合わせる。パソコンとスマホで形が変わる */
+  .g-footer { color: #2b2b2b; line-height: 1.5; }
+  .g-footer a { color: #2b2b2b; text-decoration: none; }
+  .g-footer a:hover { opacity: .7; }
+  .gf-main { display: flex; flex-direction: column; align-items: center; padding: 50px 20px; background: #faf0ec; }
+  .gf-logo { margin-bottom: 38px; }
+  .gf-logo img { display: block; width: 419px; max-width: 100%; height: auto; }
+  .gf-sitemap, .gf-sns, .gf-corp { list-style: none; display: flex; justify-content: center; }
+  .gf-sitemap { margin-bottom: 24px; }
+  .gf-sitemap a { position: relative; padding: 0 32px; font-family: 'Noto Serif JP', serif; font-size: 16px; font-weight: 700; }
+  .gf-sitemap li + li a::before { content: ''; position: absolute; top: 0; bottom: 0; left: 1px; width: 1px; height: 13px; margin: auto 0; background: #ce1a1a; }
+  .gf-sns { gap: 24px; margin-bottom: 24px; }
+  .gf-sns img { display: block; }
+  .gf-corp { gap: 24px; }
+  .gf-corp a { font-size: 12px; }
+  .gf-sub { display: flex; align-items: center; justify-content: center; height: 56px; padding: 0 20px; }
+  .gf-copy { font-size: 10px; text-align: center; }
+  @media (max-width: 999px) {
+    .gf-main { padding: 38px 20px; }
+    .gf-logo { width: 220px; margin: 0 auto 18px; }
+    .gf-logo img { width: 100%; }
+    .gf-sitemap { flex-wrap: wrap; gap: 12px 24px; }
+    .gf-sitemap a { padding: 0; font-size: 14px; }
+    .gf-sitemap li + li a::before { display: none; }
+    .gf-sns { gap: 32px; }
+    .gf-corp { flex-wrap: wrap; gap: 8px 40px; }
+    .gf-corp a { font-size: 14px; }
+    .gf-sub { height: auto; padding: 26px 20px 16px; }
+  }
   .to-top { position: fixed; right: 14px; bottom: 18px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: var(--ink-sub); font-size: 18px; cursor: pointer; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
   .to-top.show { display: block; }
   button:focus-visible, a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
@@ -315,7 +342,6 @@
       <a href="https://renaissance-media.jp/articles/-/27372" target="_blank" rel="noopener">星よみ、今日の一枚。カードをめくって今日の一冊に出会う →</a>
     </div>
 
-    <div class="footer"><a href="https://renaissance-media.jp/" target="_blank" rel="noopener">© ゴールドライフオンライン</a></div>
   </div>
 
   <div id="list" class="screen">
@@ -326,10 +352,33 @@
       <div class="list-count-row"><p class="list-count" id="listCount"></p><div class="view-switch" id="viewSwitch" role="group" aria-label="表示"><button type="button" data-v="list" aria-pressed="true">☰ リスト</button><button type="button" data-v="block" aria-pressed="false">▦ ブロック</button></div></div>
     </div>
     <div id="listSubs"></div>
-    <div class="footer"><a href="https://renaissance-media.jp/" target="_blank" rel="noopener">© ゴールドライフオンライン</a></div>
   </div>
 
 </div>
+<footer class="g-footer">
+  <div class="gf-main">
+    <a class="gf-logo" href="https://renaissance-media.jp/" target="_blank" rel="noopener"><img src="https://renaissance-media.ismcdn.jp/common/glo/images/logo.svg" width="419" height="88" alt="ゴールドライフオンライン" loading="lazy"></a>
+    <ul class="gf-sitemap">
+      <li><a href="https://renaissance-media.jp/list/about" target="_blank" rel="noopener">このサイトについて</a></li>
+      <li><a href="https://renaissance-media.jp/list/first" target="_blank" rel="noopener">はじめての方はこちら</a></li>
+      <li><a href="https://renaissance-media.jp/category/news" target="_blank" rel="noopener">お知らせ一覧</a></li>
+      <li><a href="https://renaissance-media.jp/list/author" target="_blank" rel="noopener">著者一覧</a></li>
+    </ul>
+    <ul class="gf-sns">
+      <li><a href="https://twitter.com/gentoshaglo?lang=ja" target="_blank" rel="noopener"><img src="https://renaissance-media.ismcdn.jp/common/glo/images/icon/sns-x.svg" width="19" height="25" alt="X" loading="lazy"></a></li>
+      <li><a href="https://www.facebook.com/gentoshaglo?locale=ja_JP" target="_blank" rel="noopener"><img src="https://renaissance-media.ismcdn.jp/common/glo/images/icon/sns-facebook.svg" width="23" height="25" alt="Facebook" loading="lazy"></a></li>
+      <li><a href="https://www.instagram.com/gentoshaglo/" target="_blank" rel="noopener"><img src="https://renaissance-media.ismcdn.jp/common/glo/images/icon/sns-instagram.svg" width="25" height="25" alt="Instagram" loading="lazy"></a></li>
+    </ul>
+    <ul class="gf-corp">
+      <li><a href="https://renaissance-media.jp/list/notice#terms" target="_blank" rel="noopener">免責事項</a></li>
+      <li><a href="https://renaissance-media.jp/list/notice#copyright" target="_blank" rel="noopener">著作権</a></li>
+      <li><a href="https://www.gentosha-mc.com/privacy/" target="_blank" rel="noopener">プライバシーポリシー</a></li>
+      <li><a href="https://renaissance-media.jp/list/media" target="_blank" rel="noopener">メディアの方</a></li>
+      <li><a href="https://renaissance-media.jp/list/company" target="_blank" rel="noopener">運営会社</a></li>
+    </ul>
+  </div>
+  <div class="gf-sub"><p class="gf-copy">Copyright © GENTOSHA MediaConsulting,inc. All rights reserved.</p></div>
+</footer>
 <button class="to-top" id="toTop" aria-label="ページの上へ">↑</button>
 <div class="drawer-dim" id="drawerDim"></div>
 <nav class="drawer" id="drawer" aria-label="ジャンル一覧">
