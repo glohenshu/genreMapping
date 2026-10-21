@@ -1,4 +1,4 @@
-# ジャンルから探す（genreMapping）
+# ジャンル一覧（genreMapping）
 
 GLOの連載を、ジャンル → 小ジャンル → 作品の地図と一覧で探せるページです。GitHub Pages で公開しています。
 
