@@ -107,7 +107,6 @@
   .sub-title small { font-family: var(--font-body); font-size: 13px; font-weight: 400; color: var(--ink-faint); margin-left: 8px; }
   .entries { list-style: none; }
   .entry { display: flex; gap: 14px; padding: 18px 0; border-bottom: 1px solid var(--line); }
-  .entry-no { font-family: var(--font-heading); font-size: 15px; color: var(--accent); width: 1.6em; flex-shrink: 0; line-height: 1.6; }
   .entry-cover { width: 64px; height: 94px; flex-shrink: 0; background: var(--paper-2); border: 1px solid var(--line); display: block; }
   .entry-cover img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .entry-body { flex: 1; min-width: 0; }
@@ -136,7 +135,6 @@
   .blocks .entry:hover { border-color: var(--ink-faint); }
   .blocks .entry-cover, .blocks .entry-ph { order: -1; display: flex; width: 100%; height: auto; aspect-ratio: 2 / 3; margin-bottom: 4px; }
   .blocks .entry-ph { align-items: center; justify-content: center; background: var(--paper-2); border: 1px solid var(--line); font-family: var(--font-heading); font-size: 28px; color: var(--accent); }
-  .blocks .entry-no { display: none; }  /* 番号は順位（優劣）に見えるので、ブロック表示では出さない */
   .blocks .entry-title { font-size: 15px; line-height: 1.5; }
   .blocks .entry-title:hover { text-decoration: none; }
   .blocks .entry-meta { font-size: 12px; }
@@ -186,7 +184,6 @@
     .toc-body { padding-left: 0; }
     .list-title { font-size: 24px; }
     .entry { gap: 12px; }
-    .entry-no { width: 1.3em; }
     .entry-cover { width: 56px; height: 82px; }
     .entry-title { font-size: 17px; }
   }
@@ -319,7 +316,7 @@ function entry(w, i) {
   const u = coverUrl(w);
   const cover = u ? '<a class="entry-cover" href="' + catUrl(w) + '" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true"><img src="' + esc(u) + '" alt="" loading="lazy" decoding="async" onerror="this.parentNode.remove()"></a>' : '';
   const ph = u ? '' : '<span class="entry-ph" aria-hidden="true">' + esc((w.t || '').charAt(0)) + '</span>';
-  return '<li class="entry" data-c="' + esc(w.c) + '"><span class="entry-no">' + (i + 1) + '</span>' + cover + ph + '<div class="entry-body">' +
+  return '<li class="entry" data-c="' + esc(w.c) + '">' + cover + ph + '<div class="entry-body">' +
     '<a class="entry-title" href="' + catUrl(w) + '" target="_blank" rel="noopener">' + esc(w.t) + '</a>' +
     '<p class="entry-meta">' + esc(w.a) + (w.l ? '<span class="entry-live">連載中</span>' : '') + '</p>' +
     (w.s ? '<p class="entry-sum">' + esc(w.s) + '</p>' : '') +
