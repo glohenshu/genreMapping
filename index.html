@@ -70,7 +70,18 @@
   .toc-subs li { border-top: 1px dotted var(--line); }
   .toc-subs a { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; font-size: 15px; text-decoration: none; }
   .toc-subs a small { color: var(--ink-faint); font-size: 13px; white-space: nowrap; }
-  .toc-all { display: inline-block; margin-top: 10px; font-size: 14px; font-weight: 500; text-decoration: none; }
+  .toc-all { display: inline-block; margin-top: 10px; margin-left: -8px; padding: 3px 8px; border-radius: 4px; font-size: 14px; font-weight: 500; text-decoration: none; transition: background .15s, color .15s; }
+  /* カーソルを合わせたとき（スマホは押した瞬間）：行に薄い色、作品数が「見る →」に。「すべて見る」は紺の地に白文字 */
+  .toc-subs a, .sub-index a { margin: 0 -8px; padding-left: 8px; padding-right: 8px; transition: background .15s; }
+  .toc-subs a .go, .sub-index a .go { display: none; color: var(--link); font-size: 13px; font-weight: 500; white-space: nowrap; }
+  .toc-subs a:active, .sub-index a:active { background: var(--paper-2); }
+  .toc-all:active { background: var(--link); color: #fff; }
+  @media (hover: hover) {
+    .toc-subs a:hover, .sub-index a:hover { background: var(--paper-2); }
+    .toc-subs a:hover small, .sub-index a:hover small { display: none; }
+    .toc-subs a:hover .go, .sub-index a:hover .go { display: inline; }
+    .toc-all:hover { background: var(--link); color: #fff; }
+  }
   .toc-all::after, .more-link::after { content: ' →'; }
   .toc-foot { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   .toc-close { margin-top: 10px; margin-left: auto; background: none; border: 1px solid var(--line); border-radius: 4px; padding: 4px 12px; font-size: 13px; color: var(--ink-sub); cursor: pointer; }
@@ -80,7 +91,8 @@
   .list-close { margin-top: 8px; }
   .list-close:hover, .sub-toggle:hover { border-color: var(--ink-faint); color: var(--ink); }
   .sub-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-  .sub-toggle { padding: 2px 10px; font-size: 12px; }
+  .sub-toggle { border: 0; padding: 2px 6px; font-size: 20px; line-height: 1; color: var(--ink-sub); }
+  .sub-toggle:hover { color: var(--ink); }
   .sub-sec.shut .entries, .sub-sec.shut .btn-more { display: none; }
   .sub-sec.shut .sub-title { border-bottom-color: var(--line); }
 
@@ -99,7 +111,7 @@
   .sub-index { list-style: none; margin: 18px 0 8px; }
   .sub-index li { border-top: 1px dotted var(--line); }
   .sub-index li:last-child { border-bottom: 1px dotted var(--line); }
-  .sub-index a { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; font-size: 15px; text-decoration: none; }
+  .sub-index a { display: flex; justify-content: space-between; gap: 12px; padding: 10px 8px; margin: 0 -8px; font-size: 15px; text-decoration: none; transition: background .15s; }
   .sub-index a small { color: var(--ink-faint); font-size: 13px; white-space: nowrap; }
 
   .sub-sec { margin-top: 32px; scroll-margin-top: 64px; }
@@ -286,7 +298,7 @@ const toc = document.getElementById('toc');
 toc.innerHTML = GENRES.map((g, i) =>
   '<li data-i="' + i + '"><button class="toc-row" aria-expanded="false"><span class="toc-no">' + no(i) + '</span><span class="toc-name">' + esc(g.name) + '</span><span class="toc-count">' + g.count + '作品</span><span class="toc-mark" aria-hidden="true"></span></button>' +
   '<div class="toc-body"><p class="toc-desc">' + esc(g.desc) + '</p><ul class="toc-subs">' +
-  g.subs.map(s => '<li><a href="#" data-s="' + s.code + '">' + esc(s.name) + '<small>' + s.works.length + '作品</small></a></li>').join('') +
+  g.subs.map(s => '<li><a href="#" data-s="' + s.code + '">' + esc(s.name) + '<small>' + s.works.length + '作品</small><span class="go">見る →</span></a></li>').join('') +
   '</ul><div class="toc-foot"><a class="toc-all" href="#">「' + esc(g.name) + '」の作品をすべて見る</a><button class="toc-close" type="button">− 閉じる</button></div></div></li>').join('');
 toc.addEventListener('click', e => {
   const li = e.target.closest('li[data-i]');
@@ -331,12 +343,12 @@ function showList(g, jumpSub, keepScroll) {
   document.getElementById('listNo').textContent = no(gi);
   document.getElementById('listTitle').textContent = g.name;
   document.getElementById('listDesc').textContent = g.desc;
-  document.getElementById('listCount').textContent = g.count.toLocaleString() + '作品（よく読まれている順）';
-  document.getElementById('subIndex').innerHTML = g.subs.map(s => '<li><a href="#sub-' + s.code + '">' + esc(s.name) + '<small>' + s.works.length + '作品</small></a></li>').join('');
+  document.getElementById('listCount').textContent = g.count.toLocaleString() + '作品';
+  document.getElementById('subIndex').innerHTML = g.subs.map(s => '<li><a href="#sub-' + s.code + '">' + esc(s.name) + '<small>' + s.works.length + '作品</small><span class="go">見る →</span></a></li>').join('');
   const box = document.getElementById('listSubs');
   box.innerHTML = g.subs.map(s => {
     const rest = s.works.length - FIRST_SHOW;
-    return '<section class="sub-sec" id="sub-' + s.code + '"><h3 class="sub-title"><span>' + esc(s.name) + '<small>' + s.works.length + '作品</small></span><button class="sub-toggle" type="button" aria-expanded="true">− 閉じる</button></h3>' +
+    return '<section class="sub-sec" id="sub-' + s.code + '"><h3 class="sub-title"><span>' + esc(s.name) + '<small>' + s.works.length + '作品</small></span><button class="sub-toggle" type="button" aria-expanded="true" aria-label="閉じる">−</button></h3>' +
       '<ol class="entries">' + s.works.slice(0, FIRST_SHOW).map(entry).join('') + '</ol>' +
       (rest > 0 ? '<button class="btn-more" data-s="' + s.code + '">残り' + rest + '作品を表示</button>' : '') + '</section>';
   }).join('');
@@ -345,7 +357,8 @@ function showList(g, jumpSub, keepScroll) {
     const t = e.target.closest('.sub-toggle');
     if (t) {
       const shut = t.closest('.sub-sec').classList.toggle('shut');
-      t.textContent = shut ? '＋ 開く' : '− 閉じる';
+      t.textContent = shut ? '＋' : '−';
+      t.setAttribute('aria-label', shut ? '開く' : '閉じる');
       t.setAttribute('aria-expanded', !shut);
       return;
     }
