@@ -90,7 +90,8 @@
   .list-close, .sub-toggle { flex-shrink: 0; background: none; border: 1px solid var(--line); border-radius: 4px; padding: 4px 12px; font-family: var(--font-body); font-size: 13px; font-weight: 400; letter-spacing: 0; color: var(--ink-sub); cursor: pointer; white-space: nowrap; }
   .list-close { margin-top: 8px; }
   .list-close:hover, .sub-toggle:hover { border-color: var(--ink-faint); color: var(--ink); }
-  .sub-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .sub-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; cursor: pointer; }
+  .sub-title:hover .sub-toggle { color: var(--ink); }
   .sub-toggle { border: 0; padding: 2px 6px; font-size: 20px; line-height: 1; color: var(--ink-sub); }
   .sub-toggle:hover { color: var(--ink); }
   .sub-sec.shut .entries, .sub-sec.shut .btn-more { display: none; }
@@ -108,11 +109,6 @@
   .list-desc { font-size: 15px; color: var(--ink-sub); margin-top: 8px; }
   .list-count { font-size: 13px; color: var(--ink-faint); margin-top: 6px; }
   /* ジャンルのページ上の小分類一覧：目次の小分類と同じ見た目（点線で区切り、作品数は右） */
-  .sub-index { list-style: none; margin: 18px 0 8px; }
-  .sub-index li { border-top: 1px dotted var(--line); }
-  .sub-index li:last-child { border-bottom: 1px dotted var(--line); }
-  .sub-index a { display: flex; justify-content: space-between; gap: 12px; padding: 10px 8px; margin: 0 -8px; font-size: 15px; text-decoration: none; transition: background .15s; }
-  .sub-index a small { color: var(--ink-faint); font-size: 13px; white-space: nowrap; }
 
   .sub-sec { margin-top: 32px; scroll-margin-top: 64px; }
   .sub-title { font-family: var(--font-heading); font-size: 20px; font-weight: 600; letter-spacing: 1px; padding-bottom: 8px; border-bottom: 1px solid var(--ink); }
@@ -263,7 +259,6 @@
       <p class="list-desc" id="listDesc"></p>
       <div class="list-count-row"><p class="list-count" id="listCount"></p><div class="view-switch" id="viewSwitch" role="group" aria-label="表示"><button type="button" data-v="list" aria-pressed="true">☰ リスト</button><button type="button" data-v="block" aria-pressed="false">▦ ブロック</button></div></div>
     </div>
-    <ol class="sub-index" id="subIndex"></ol>
     <div id="listSubs"></div>
     <button class="btn-back" onclick="goBack()">← 目次に戻る</button>
     <div class="footer"><a href="https://renaissance-media.jp/" target="_blank" rel="noopener">© ゴールドライフオンライン</a></div>
@@ -362,6 +357,13 @@ function entry(w, i) {
 }
 
 let curList = null;
+function setShut(sec, shut) {
+  sec.classList.toggle('shut', shut);
+  const t = sec.querySelector('.sub-toggle');
+  t.textContent = shut ? '＋' : '−';
+  t.setAttribute('aria-label', shut ? '開く' : '閉じる');
+  t.setAttribute('aria-expanded', !shut);
+}
 function showList(g, jumpSub, keepScroll) {
   curList = g;
   const gi = GENRES.indexOf(g);
@@ -369,22 +371,19 @@ function showList(g, jumpSub, keepScroll) {
   document.getElementById('listTitle').textContent = g.name;
   document.getElementById('listDesc').textContent = g.desc;
   document.getElementById('listCount').textContent = g.count.toLocaleString() + '作品';
-  document.getElementById('subIndex').innerHTML = g.subs.map(s => '<li><a href="#sub-' + s.code + '">' + esc(s.name) + '<small>' + s.works.length + '作品</small><span class="go">見る →</span></a></li>').join('');
   const box = document.getElementById('listSubs');
   box.innerHTML = g.subs.map(s => {
     const rest = s.works.length - FIRST_SHOW;
-    return '<section class="sub-sec" id="sub-' + s.code + '"><h3 class="sub-title"><span>' + esc(s.name) + '<small>' + s.works.length + '作品</small></span><button class="sub-toggle" type="button" aria-expanded="true" aria-label="閉じる">−</button></h3>' +
+    return '<section class="sub-sec shut" id="sub-' + s.code + '"><h3 class="sub-title"><span>' + esc(s.name) + '<small>' + s.works.length + '作品</small></span><button class="sub-toggle" type="button" aria-expanded="false" aria-label="開く">＋</button></h3>' +
       '<ol class="entries">' + s.works.slice(0, FIRST_SHOW).map(entry).join('') + '</ol>' +
       (rest > 0 ? '<button class="btn-more" data-s="' + s.code + '">残り' + rest + '作品を表示</button>' : '') + '</section>';
   }).join('');
   box.onclick = e => {
-    // 小分類の見出しの「閉じる／開く」：作品の一覧をたたむ（見出しは残す）
-    const t = e.target.closest('.sub-toggle');
-    if (t) {
-      const shut = t.closest('.sub-sec').classList.toggle('shut');
-      t.textContent = shut ? '＋' : '−';
-      t.setAttribute('aria-label', shut ? '開く' : '閉じる');
-      t.setAttribute('aria-expanded', !shut);
+    // 小分類の見出しの行を押すと、作品の一覧を開け閉めする（最初は閉じている）
+    const h = e.target.closest('.sub-title');
+    if (h) {
+      const sec = h.closest('.sub-sec');
+      setShut(sec, !sec.classList.contains('shut'));
       return;
     }
     // ブロック表示では、作品を押すと（記事に移らず）作品のカードを開く
@@ -401,16 +400,11 @@ function showList(g, jumpSub, keepScroll) {
     b.remove();
   };
   applyView();
-  // 上の小分類一覧から移ったときは、閉じていても開いて見せる
-  document.getElementById('subIndex').onclick = e => {
-    const a = e.target.closest('a');
-    const sec = a && document.getElementById(a.getAttribute('href').slice(1));
-    if (sec && sec.classList.contains('shut')) sec.querySelector('.sub-toggle').click();
-  };
   if (keepScroll) return;
   document.getElementById('top').classList.remove('active');
   document.getElementById('list').classList.add('active');
-  if (jumpSub) requestAnimationFrame(() => { const el = document.getElementById('sub-' + jumpSub); if (el) el.scrollIntoView(); });
+  // 目次の小分類から来たときは、その小分類を開いて見せる
+  if (jumpSub) requestAnimationFrame(() => { const el = document.getElementById('sub-' + jumpSub); if (el) { setShut(el, false); el.scrollIntoView(); } });
   else window.scrollTo(0, 0);
 }
 function goBack() {
