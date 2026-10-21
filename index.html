@@ -222,18 +222,29 @@
   .sr-label small { font-family: var(--font-body); font-size: 13px; font-weight: 400; color: var(--ink-faint); margin-left: 8px; }
   .sr-subs { margin-top: 4px; }
   .sr-none { margin-top: 28px; font-size: 15px; color: var(--ink-sub); line-height: 1.9; }
-  /* GLO の記事全体の検索へ進む道（入力欄の下と、結果のいちばん下） */
-  .sr-glo { margin-top: 32px; padding: 20px; background: var(--paper-2); border-radius: 4px; }
-  .sr-glo p { font-size: 14px; color: var(--ink-sub); }
-  .sr-glo a { display: inline-block; margin-top: 6px; font-size: 15px; font-weight: 500; }
   /* 検索欄（目次の見出しの下と、検索結果の見出しの下） */
   .page-search-box { margin-top: 18px; }
   .page-search { display: flex; border: 1px solid #c4c4c4; border-radius: 4px; overflow: hidden; background: #fff; }
   .page-search input { flex: 1; min-width: 0; border: 0; padding: 12px 14px; font-family: var(--font-body); font-size: 16px; }
   .page-search button { flex-shrink: 0; border: 0; padding: 0 20px; background: var(--ink); color: #fff; font-family: var(--font-body); font-size: 15px; cursor: pointer; }
   .page-search-note { font-size: 13px; color: var(--ink-faint); margin-top: 6px; }
-  .page-search-more { font-size: 14px; margin-top: 2px; }
-  .page-search-more a { font-weight: 500; }
+  /* 目次の上の検索欄はたたんでおく。開け閉めの印は目次と同じ＋と− */
+  .page-search-toggle { display: inline-flex; align-items: center; gap: 8px; list-style: none; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--link); }
+  .page-search-toggle::-webkit-details-marker { display: none; }
+  .page-search-toggle::after { content: '＋'; font-size: 16px; font-weight: 400; color: var(--ink-sub); }
+  details[open] > .page-search-toggle::after { content: '−'; }
+  details[open] > .page-search-toggle { margin-bottom: 10px; }
+
+
+  /* GLO の記事に埋め込んだとき（親のページが「いま見えている範囲」を知らせてくれたときだけ）：
+     画面に固定して出すもの（作品のカード・サイドバー・上へ戻るボタン）を、見えている範囲に出す */
+  .embed-view .drawer-dim, .embed-view .sheet-dim { position: absolute; top: var(--vt); bottom: var(--vb); }
+  .embed-view .drawer { position: absolute; top: var(--vt); bottom: var(--vb); }
+  .embed-view .sheet { position: absolute; bottom: var(--vb); max-height: calc(var(--vh) * .88); }
+  .embed-view .to-top { position: absolute; bottom: calc(var(--vb) + 18px); }
+  @media (min-width: 640px) {
+    .embed-view .sheet { top: calc(var(--vt) + var(--vh) / 2); bottom: auto; max-height: calc(var(--vh) * .9); }
+  }
 
   /* おすすめ作品診断の枠：診断ページができるまで非表示（表示に戻すときは、この1行を消す） */
   .cta { display: none !important; }
@@ -247,13 +258,13 @@
     <div class="masthead">
       <p class="eyebrow">GOLD LIFE ONLINE</p>
       <h1>ジャンル一覧</h1>
-      <p class="lead">気になるジャンルを開くと、その中のテーマが並びます。</p>
+      <p class="lead">ジャンルを開くと、テーマごとに作品を探せます。</p>
       <p class="stats" id="stats"></p>
-      <div class="page-search-box">
+      <details class="page-search-box" id="searchFold">
+        <summary class="page-search-toggle">作品を検索する</summary>
         <form class="page-search" role="search"><input type="search" name="q" placeholder="作品名・著者名・言葉で探す" aria-label="ジャンル一覧の作品を検索"><button type="submit">探す</button></form>
         <p class="page-search-note">このページに載っている作品から、作品名・著者名・内容紹介で探します。</p>
-        <p class="page-search-more"><a class="glo-more" href="https://renaissance-media.jp/" target="_blank" rel="noopener">GLO の記事全体から探す →</a></p>
-      </div>
+      </details>
     </div>
 
     <ol class="toc" id="toc"></ol>
@@ -282,8 +293,6 @@
       <p class="list-count" id="srCount"></p>
       <div class="page-search-box">
         <form class="page-search" role="search"><input type="search" name="q" placeholder="作品名・著者名・言葉で探す" aria-label="ジャンル一覧の作品を検索"><button type="submit">探す</button></form>
-        <p class="page-search-note">このページに載っている作品から、作品名・著者名・内容紹介で探します。</p>
-        <p class="page-search-more"><a class="glo-more" href="https://renaissance-media.jp/" target="_blank" rel="noopener">GLO の記事全体から探す →</a></p>
       </div>
     </div>
     <div id="srBody"></div>
@@ -310,6 +319,21 @@
 <script src="data/covers_manual.js"></script>
 <script src="data/covers_auto.js"></script>
 <script>
+/* GLO の記事の中に埋め込んだとき（iframe）
+   - このページの高さを親に知らせて、iframe の高さを合わせてもらう
+   - 画面を移るときは、親のページをスクロールしてもらう
+   - 親が「いま見えている範囲」を知らせてくれたら、カード・サイドバー・上へ戻るボタンをその範囲に出す
+   どれも親のページの側に、受け取るためのコードが要る（README の「GLO の記事に埋め込む」） */
+const EMBED = window.parent !== window;
+const toParent = m => { if (EMBED) parent.postMessage(Object.assign({ glo: 'genre' }, m), '*'); };
+let viewTop = 0;
+const curTop = () => EMBED ? viewTop : window.scrollY;
+const pageY = el => el.getBoundingClientRect().top + window.scrollY;
+function scrollToY(y, smooth) {
+  y = Math.max(0, Math.round(y));
+  if (EMBED) toParent({ scrollTo: y, smooth: !!smooth });
+  else window.scrollTo({ top: y, behavior: smooth ? 'smooth' : 'auto' });
+}
 const DATA = window.GLO_DATA || { genres: [] };
 // kintone の表示設定で「表示しない」にした小分類は出さない（小分類がすべて隠れたジャンルも出さない）
 const HIDDEN = new Set(window.GLO_HIDDEN || []);
@@ -360,7 +384,7 @@ toc.addEventListener('click', e => {
     li.classList.remove('open');
     li.querySelector('.toc-row').setAttribute('aria-expanded', false);
     // 閉じたジャンルの見出しが画面の上に隠れていたら、見える位置に戻す
-    if (li.getBoundingClientRect().top < 0) { li.scrollIntoView(); window.scrollBy(0, -16); }
+    if (pageY(li) < curTop()) scrollToY(pageY(li) - 16);
     return;
   }
   const a = e.target.closest('a');
@@ -428,8 +452,8 @@ function showList(g, jumpSub, keepScroll) {
   if (keepScroll) return;
   showScreen('list');
   // 目次の小分類から来たときは、その小分類を開いて見せる
-  if (jumpSub) requestAnimationFrame(() => { const el = document.getElementById('sub-' + jumpSub); if (el) { setShut(el, false); el.scrollIntoView(); } });
-  else window.scrollTo(0, 0);
+  if (jumpSub) requestAnimationFrame(() => { const el = document.getElementById('sub-' + jumpSub); if (el) { setShut(el, false); scrollToY(pageY(el) - 16); } });
+  else scrollToY(0);
 }
 /* 画面の切り替え：目次・ジャンルのページ・検索結果のどれか1つを出す */
 function showScreen(id) { ['top', 'list', 'search'].forEach(x => document.getElementById(x).classList.toggle('active', x === id)); }
@@ -441,8 +465,8 @@ function goBack() {
   const li = toc.querySelector('li[data-i="' + gi + '"]');
   if (li) {
     li.classList.add('open'); li.querySelector('.toc-row').setAttribute('aria-expanded', true);
-    li.scrollIntoView(); window.scrollBy(0, -16);
-  } else window.scrollTo(0, 0);
+    scrollToY(pageY(li) - 16);
+  } else scrollToY(0);
 }
 
 /* 表示の切り替え：ページを開いている間だけ覚える（ジャンルを移っても同じ表示。読み込み直すとリストに戻る） */
@@ -576,11 +600,10 @@ function runSearch(q) {
   if (srHits.length) h += '<section class="sr-section"><h3 class="sr-label">作品<small>' + srHits.length.toLocaleString() + '作品</small></h3><ol class="entries" id="srList">' + srHits.slice(0, SR_FIRST).map(srEntry).join('') + '</ol>' +
     (srHits.length > SR_FIRST ? '<button class="btn-more" id="srMore">残り' + (srHits.length - SR_FIRST) + '作品を表示</button>' : '') + '</section>';
   if (!srHits.length && !subHits.length) h += '<p class="sr-none">このページの作品には、「' + esc(q) + '」に当てはまるものが見つかりませんでした。<br>言葉を短くするか、ひらがな・カタカナを変えて、もう一度お試しください。</p>';
-  h += '<div class="sr-glo"><p>' + (srHits.length ? 'ほかの記事も探したいときは' : 'GLO の記事全体からも探せます') + '</p><a href="' + gloSearchUrl(q) + '" target="_blank" rel="noopener">「' + esc(q) + '」を GLO の記事全体から探す →</a></div>';
   document.getElementById('srBody').innerHTML = h;
   document.querySelectorAll('.page-search input').forEach(i => { i.value = q; });
   showScreen('search');
-  window.scrollTo(0, 0);
+  scrollToY(0);
 }
 // 結果の作品には、どの分類の作品かを添える（大きなジャンル名は長くなるので出さない）
 function srEntry(p) {
@@ -592,26 +615,38 @@ document.getElementById('srBody').onclick = e => {
   const a = e.target.closest('a[data-g]');
   if (a) { e.preventDefault(); showList(GENRES[+a.dataset.g], a.dataset.s); }
 };
-document.getElementById('srBack').onclick = e => { e.preventDefault(); showScreen('top'); window.scrollTo(0, 0); };
+document.getElementById('srBack').onclick = e => { e.preventDefault(); showScreen('top'); scrollToY(0); };
 document.querySelectorAll('.page-search').forEach(f => f.onsubmit = e => { e.preventDefault(); runSearch(f.q.value); });
-// GLO 本サイトの検索へ：入力した言葉のまま進む
-// 本サイトの検索ページは、言葉なしで開くと「ページが見つかりません」になるので、空のときは移らずに入力をうながす
-const gloSearchUrl = q => 'https://renaissance-media.jp/list/search?fulltext=' + encodeURIComponent(q);
-document.querySelectorAll('.glo-more').forEach(a => a.onclick = e => {
-  const input = a.closest('.page-search-box').querySelector('input');
-  const q = input.value.trim();
-  if (!q) {
-    e.preventDefault();
-    input.placeholder = '探したい言葉を入れてから押してください';
-    input.focus();
-    return;
-  }
-  a.href = gloSearchUrl(q);
-});
+// 「作品を検索する」を押して開いたら、すぐ入力できるようにする
+document.getElementById('searchFold').addEventListener('toggle', e => { if (e.target.open) e.target.querySelector('input').focus(); });
 
 const toTop = document.getElementById('toTop');
 window.addEventListener('scroll', () => toTop.classList.toggle('show', window.scrollY > 800), { passive: true });
-toTop.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+toTop.onclick = () => scrollToY(0, true);
+
+if (EMBED) {
+  // 高さが変わるたびに知らせる（開け閉め・「残りを表示」・画面の切り替えなど）
+  let lastH = 0;
+  const sendHeight = () => { const h = Math.ceil(document.body.getBoundingClientRect().height); if (h !== lastH) { lastH = h; toParent({ height: h }); } };
+  new ResizeObserver(sendHeight).observe(document.body);
+  // 念のため1秒ごとにも確かめる（ブラウザによっては、上の知らせが止まることがあるため）
+  setInterval(sendHeight, 1000);
+  sendHeight();
+  toParent({ ready: true });
+  // 親から「いま見えている範囲」（このページの上から top〜top+height）を受け取る
+  window.addEventListener('message', e => {
+    if (e.source !== parent || !e.data || e.data.glo !== 'genre' || !e.data.view) return;
+    const t = +e.data.view.top, h = +e.data.view.height;
+    if (!isFinite(t) || !isFinite(h) || h <= 0) return;
+    viewTop = t;
+    const r = document.documentElement.style;
+    r.setProperty('--vt', t + 'px');
+    r.setProperty('--vh', h + 'px');
+    r.setProperty('--vb', Math.max(0, window.innerHeight - t - h) + 'px');
+    document.documentElement.classList.add('embed-view');
+    toTop.classList.toggle('show', t > 800);
+  });
+}
 </script>
 </body>
 </html>

@@ -13,7 +13,48 @@ GLOの連載を、ジャンル → テーマ → 作品の地図と一覧で探�
 - テーマ（小分類）の名前は 2026-10 に見直した（S01〜S89 のうち31件。コードは変えていない）。名前を変えるときは、`genres_config.json`・kintone 507 の「小分類（主）」「小分類（副）」の選択肢と既存レコード・kintone 513 の小分類名・分類スキルの小分類一覧を、すべてそろえる。
 - 「犬」「猫」は1つにまとめず、別々の小分類のままにする。
 - ヘッダーとフッターは置かない（2026-10-21 に外した）。
-- 検索欄は見出しの下（目次の上）に置き、このページに載っている作品から探す（作品名・著者名・内容紹介・ジャンル名）。入力欄の下と結果のいちばん下から、同じ言葉で GLO の記事全体の検索にも進める。
+- 検索欄は見出しの下（目次の上）に置き、ふだんはたたんでおく（「作品を検索する ＋」で開く）。このページに載っている作品から探す（作品名・著者名・内容紹介・ジャンル名）。GLO の記事全体の検索へ進む道は置かない。
+
+## GLO の記事に埋め込む
+
+GLO の記事（記事の本文の HTML）には、次のコードを貼ります。iframe の高さがページの中身に合わせて変わり、ジャンルを移ったときは記事がそのジャンルの頭までスクロールします。作品のカード・ジャンル一覧（☰）・「↑」のボタンも、いま見えている範囲に出ます。
+
+- パソコンでは、GLO の記事の本文の幅（696px）がいちばん広い幅です。
+- `<script>` が消されてしまう場合は、高さが 1600px のままになり、長いジャンルは下が切れます。そのときは知らせてください。
+- 中身の高さに合わせるので、`height:clamp(...)` のような決め打ちの高さは要りません。
+
+```html
+<div style="width:100%; max-width:720px; margin:0 auto;">
+<iframe id="gloGenreFrame" src="https://glohenshu.github.io/genreMapping/" title="ジャンル一覧" loading="lazy" scrolling="no" style="width:100%; border:0; display:block; height:1600px;"></iframe>
+</div>
+<script>
+/* ジャンル一覧の埋め込み：高さを中身に合わせる・画面の移動で記事をスクロールする・見えている範囲を知らせる */
+(function () {
+  var ORIGIN = 'https://glohenshu.github.io';
+  var TOP_SPACE = 80; // スクロールしたとき、GLO のヘッダーに隠れないように空ける高さ
+  var f = document.getElementById('gloGenreFrame');
+  function sendView() {
+    var r = f.getBoundingClientRect();
+    var top = Math.max(0, -r.top);
+    var bottom = Math.min(r.height, window.innerHeight - r.top);
+    if (bottom <= top) return;
+    f.contentWindow.postMessage({ glo: 'genre', view: { top: top, height: bottom - top } }, ORIGIN);
+  }
+  window.addEventListener('message', function (e) {
+    if (e.origin !== ORIGIN || e.source !== f.contentWindow || !e.data || e.data.glo !== 'genre') return;
+    var d = e.data;
+    if (d.height) f.style.height = d.height + 'px';
+    if (typeof d.scrollTo === 'number') {
+      var y = f.getBoundingClientRect().top + window.pageYOffset + d.scrollTo - TOP_SPACE;
+      window.scrollTo({ top: Math.max(0, y), behavior: d.smooth ? 'smooth' : 'auto' });
+    }
+    sendView();
+  });
+  window.addEventListener('scroll', sendView, { passive: true });
+  window.addEventListener('resize', sendView);
+})();
+</script>
+```
 
 ## 毎月の自動更新
 
