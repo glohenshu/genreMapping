@@ -330,7 +330,7 @@
       <button type="submit" aria-label="検索"></button>
     </form>
     <p class="gh-search-note">このページに載っている作品から、作品名・著者名・内容紹介で探します。<br>複数の言葉で調べる場合は、言葉ごとにスペースで区切ってください。</p>
-    <p class="gh-search-more"><a href="https://renaissance-media.jp/list/search" id="gloMore" target="_blank" rel="noopener">GLO の記事全体から探す →</a></p>
+    <p class="gh-search-more"><a href="https://renaissance-media.jp/" id="gloMore" target="_blank" rel="noopener">GLO の記事全体から探す →</a></p>
   </div>
   <div class="gh-panel gh-menu" id="ghMenu" hidden>
     <ul class="gh-menu-list">
@@ -736,9 +736,20 @@ document.getElementById('pageSearch').onsubmit = e => {
   setPanel('ghSearchBtn', 'ghSearch', false);
   runSearch(e.target.q.value);
 };
-// GLO 本サイトの検索へ：入力した言葉のまま進む（空なら検索ページだけ開く）
-const gloSearchUrl = q => 'https://renaissance-media.jp/list/search' + (q ? '?fulltext=' + encodeURIComponent(q) : '');
-document.getElementById('gloMore').onclick = e => { e.currentTarget.href = gloSearchUrl(document.querySelector('#pageSearch input').value.trim()); };
+// GLO 本サイトの検索へ：入力した言葉のまま進む
+// 本サイトの検索ページは、言葉なしで開くと「ページが見つかりません」になるので、空のときは移らずに入力をうながす
+const gloSearchUrl = q => 'https://renaissance-media.jp/list/search?fulltext=' + encodeURIComponent(q);
+document.getElementById('gloMore').onclick = e => {
+  const input = document.querySelector('#pageSearch input');
+  const q = input.value.trim();
+  if (!q) {
+    e.preventDefault();
+    input.placeholder = '探したい言葉を入れてから押してください';
+    input.focus();
+    return;
+  }
+  e.currentTarget.href = gloSearchUrl(q);
+};
 
 const toTop = document.getElementById('toTop');
 window.addEventListener('scroll', () => toTop.classList.toggle('show', window.scrollY > 800), { passive: true });
