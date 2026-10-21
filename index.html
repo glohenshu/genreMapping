@@ -95,10 +95,12 @@
   .list-title { font-family: var(--font-heading); font-size: 28px; font-weight: 600; letter-spacing: 2px; line-height: 1.5; }
   .list-desc { font-size: 15px; color: var(--ink-sub); margin-top: 8px; }
   .list-count { font-size: 13px; color: var(--ink-faint); margin-top: 6px; }
-  .sub-index { list-style: none; margin: 18px 0 8px; padding: 14px 16px; background: var(--paper-2); border-radius: 4px; }
-  .sub-index li { font-size: 14px; line-height: 2.1; }
-  .sub-index a { text-decoration: none; }
-  .sub-index small { color: var(--ink-faint); margin-left: 6px; }
+  /* ジャンルのページ上の小分類一覧：目次の小分類と同じ見た目（点線で区切り、作品数は右） */
+  .sub-index { list-style: none; margin: 18px 0 8px; }
+  .sub-index li { border-top: 1px dotted var(--line); }
+  .sub-index li:last-child { border-bottom: 1px dotted var(--line); }
+  .sub-index a { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; font-size: 15px; text-decoration: none; }
+  .sub-index a small { color: var(--ink-faint); font-size: 13px; white-space: nowrap; }
 
   .sub-sec { margin-top: 32px; scroll-margin-top: 64px; }
   .sub-title { font-family: var(--font-heading); font-size: 20px; font-weight: 600; letter-spacing: 1px; padding-bottom: 8px; border-bottom: 1px solid var(--ink); }
@@ -275,7 +277,7 @@ function showList(g, jumpSub, keepScroll) {
   document.getElementById('listTitle').textContent = g.name;
   document.getElementById('listDesc').textContent = g.desc;
   document.getElementById('listCount').textContent = g.count.toLocaleString() + '作品（よく読まれている順）';
-  document.getElementById('subIndex').innerHTML = g.subs.map(s => '<li><a href="#sub-' + s.code + '">' + esc(s.name) + '</a><small>' + s.works.length + '</small></li>').join('');
+  document.getElementById('subIndex').innerHTML = g.subs.map(s => '<li><a href="#sub-' + s.code + '">' + esc(s.name) + '<small>' + s.works.length + '作品</small></a></li>').join('');
   const box = document.getElementById('listSubs');
   box.innerHTML = g.subs.map(s => {
     const rest = s.works.length - FIRST_SHOW;
