@@ -11,7 +11,7 @@
 <meta property="og:site_name" content="ゴールドライフオンライン">
 <meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@700&family=Shippori+Mincho:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Shippori+Mincho:wght@500;600&display=swap" rel="stylesheet">
 <style>
   /* 案3：雑誌の目次型（白地・文字が主役・装飾は最小限） */
   :root {
@@ -31,53 +31,6 @@
   body { font-family: var(--font-body); background: var(--paper); color: var(--ink); font-size: 16px; line-height: 1.8; }
   a { color: var(--link); }
   button { font-family: inherit; }
-
-  /* ヘッダー：GLO 本サイト（renaissance-media.jp）のヘッダーに合わせる。パソコンとスマホで形が変わる */
-  .g-header { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid #ececec; }
-  .gh-inner { position: relative; display: flex; align-items: center; height: 64px; padding: 0 72px 0 40px; }
-  .gh-logo { margin-right: auto; }
-  .gh-logo img { display: block; width: 190px; height: 40px; }
-  .gh-logo:hover, .gh-nav a:hover, .gh-genkun:hover, .gh-search-btn:hover { opacity: .7; }
-  .gh-nav { display: flex; gap: 40px; margin-right: 40px; }
-  .gh-nav a { position: relative; padding-left: 22px; font-size: 14px; font-weight: 700; color: #2b2b2b; text-decoration: none; white-space: nowrap; }
-  .gh-nav a::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 20px; height: 20px; margin: auto 0; background-size: cover; }
-  .gh-nav .ranking { padding-left: 20px; }
-  .gh-nav .ranking::before { background-image: url(https://renaissance-media.jp/common/glo/images/icon/heading-crown.svg); }
-  .gh-nav .latest { padding-left: 27px; }
-  .gh-nav .latest::before { width: 22px; height: 22px; background-image: url(https://renaissance-media.jp/common/glo/images/icon/heading-new.svg); }
-  .gh-nav .book { padding-left: 30px; }
-  .gh-nav .book::before { width: 22px; height: 22px; background-image: url(https://renaissance-media.jp/common/glo/images/icon/heading-book2.svg); }
-  .gh-nav .event::before { background-image: url(https://renaissance-media.jp/common/glo/images/icon/heading-flag.svg); }
-  .gh-genkun { position: relative; margin-right: 32px; padding: 7px 30px; border: 1px solid #2b2b2b; border-radius: 20px; font-size: 14px; font-weight: 700; color: #2b2b2b; text-decoration: none; white-space: nowrap; }
-  .gh-genkun::before { content: ''; position: absolute; top: 0; right: 12px; bottom: 0; width: 12px; height: 10px; margin: auto 0; background: url(https://renaissance-media.jp/common/glo/images/icon/external-link.svg) no-repeat center / contain; }
-  .gh-genkun img { position: absolute; bottom: 3px; left: -10px; width: 32px; height: 46px; }
-  .gh-search-btn { position: absolute; z-index: 1; top: 0; right: 0; width: 72px; height: 72px; border: 0; border-bottom-left-radius: 20px; background: #ce1a1a url(https://renaissance-media.jp/common/glo/images/icon/header-search.svg) no-repeat center 14px; cursor: pointer; }
-  .gh-search-btn[aria-expanded="true"] { background-image: url(https://renaissance-media.jp/common/glo/images/icon/header-search-close.svg); }
-  .gh-search-btn span { position: absolute; top: 41px; right: 0; left: 0; text-align: center; font-size: 12px; color: #fff; }
-  .gh-menu-btn { display: none; }
-  .gh-panel { position: absolute; left: 0; right: 0; top: 100%; background: #f2f2f2; padding: 28px 16px; }
-  .gh-panel[hidden] { display: none; }
-  .gh-search { display: flex; max-width: 600px; margin: 0 auto; background: #fff; border: 1px solid #c4c4c4; border-radius: 4px; overflow: hidden; }
-  .gh-search input { flex: 1; min-width: 0; border: 0; padding: 12px 14px; font-family: var(--font-body); font-size: 16px; }
-  .gh-search button { width: 52px; border: 0; background: #ce1a1a url(https://renaissance-media.jp/common/glo/images/icon/header-search.svg) no-repeat center / 18px 18px; cursor: pointer; }
-  .gh-search-note { max-width: 600px; margin: 10px auto 0; font-size: 12px; line-height: 1.8; color: #555; }
-  .gh-menu { background: #fff; padding: 8px 20px 24px; max-height: calc(100vh - 60px); overflow-y: auto; }
-  .gh-menu-list { list-style: none; }
-  .gh-menu-list li { border-bottom: 1px solid #c4c4c4; }
-  .gh-menu-list li:first-child { border-top: 1px solid #c4c4c4; }
-  .gh-menu-list a { position: relative; display: block; padding: 17px 0; text-align: center; font-weight: 700; color: #2b2b2b; text-decoration: none; }
-  .gh-menu-list a::after { content: ''; position: absolute; top: 0; right: 21px; bottom: 0; width: 6px; height: 6px; margin: auto 0; transform: rotate(135deg); border-top: 1px solid #2b2b2b; border-left: 1px solid #2b2b2b; }
-  .gh-menu .gh-genkun { display: block; width: fit-content; margin: 24px auto 0; }
-  @media (max-width: 999px) {
-    .gh-inner { height: 60px; padding: 0; justify-content: space-between; }
-    .gh-nav, .gh-inner > .gh-genkun { display: none; }
-    .gh-search-btn { position: relative; order: -1; flex-shrink: 0; width: 60px; height: 60px; border-radius: 0; background-position: center 13px; background-size: 18px 18px; }
-    .gh-search-btn span { top: 32px; }
-    .gh-logo { margin: 0 auto; }
-    .gh-logo img { width: auto; height: 38px; }
-    .gh-menu-btn { display: block; flex-shrink: 0; width: 60px; height: 60px; border: 0; background: #fff url(https://renaissance-media.jp/common/glo/images/icon/header-menu.svg) no-repeat center; cursor: pointer; }
-    .gh-menu-btn[aria-expanded="true"] { background-image: url(https://renaissance-media.jp/common/glo/images/icon/header-menu-close.svg); }
-  }
 
   .container { max-width: 720px; margin: 0 auto; padding: 0 20px 64px; }
   .screen { display: none; }
@@ -148,7 +101,7 @@
   .list-count { font-size: 13px; color: var(--ink-faint); margin-top: 6px; }
   /* ジャンルのページ上の小分類一覧：目次の小分類と同じ見た目（点線で区切り、作品数は右） */
 
-  .sub-sec { margin-top: 32px; scroll-margin-top: 64px; }
+  .sub-sec { margin-top: 32px; scroll-margin-top: 16px; }
   .sub-title { font-family: var(--font-heading); font-size: 20px; font-weight: 600; letter-spacing: 1px; padding-bottom: 8px; border-bottom: 1px solid var(--ink); }
   .sub-title small { font-family: var(--font-body); font-size: 13px; font-weight: 400; color: var(--ink-faint); margin-left: 8px; white-space: nowrap; }
   .entries { list-style: none; }
@@ -242,35 +195,6 @@
   .drawer-list a:hover, .drawer-list a:active { background: var(--paper-2); }
   body.drawer-open { overflow: hidden; }
 
-  /* フッター：GLO 本サイト（renaissance-media.jp）のフッターに合わせる。パソコンとスマホで形が変わる */
-  .g-footer { color: #2b2b2b; line-height: 1.5; }
-  .g-footer a { color: #2b2b2b; text-decoration: none; }
-  .g-footer a:hover { opacity: .7; }
-  .gf-main { display: flex; flex-direction: column; align-items: center; padding: 50px 20px; background: #faf0ec; }
-  .gf-logo { margin-bottom: 38px; }
-  .gf-logo img { display: block; width: 419px; max-width: 100%; height: auto; }
-  .gf-sitemap, .gf-sns, .gf-corp { list-style: none; display: flex; justify-content: center; }
-  .gf-sitemap { margin-bottom: 24px; }
-  .gf-sitemap a { position: relative; padding: 0 32px; font-family: 'Noto Serif JP', serif; font-size: 16px; font-weight: 700; }
-  .gf-sitemap li + li a::before { content: ''; position: absolute; top: 0; bottom: 0; left: 1px; width: 1px; height: 13px; margin: auto 0; background: #ce1a1a; }
-  .gf-sns { gap: 24px; margin-bottom: 24px; }
-  .gf-sns img { display: block; }
-  .gf-corp { gap: 24px; }
-  .gf-corp a { font-size: 12px; }
-  .gf-sub { display: flex; align-items: center; justify-content: center; height: 56px; padding: 0 20px; }
-  .gf-copy { font-size: 10px; text-align: center; }
-  @media (max-width: 999px) {
-    .gf-main { padding: 38px 20px; }
-    .gf-logo { width: 220px; margin: 0 auto 18px; }
-    .gf-logo img { width: 100%; }
-    .gf-sitemap { flex-wrap: wrap; gap: 12px 24px; }
-    .gf-sitemap a { padding: 0; font-size: 14px; }
-    .gf-sitemap li + li a::before { display: none; }
-    .gf-sns { gap: 32px; }
-    .gf-corp { flex-wrap: wrap; gap: 8px 40px; }
-    .gf-corp a { font-size: 14px; }
-    .gf-sub { height: auto; padding: 26px 20px 16px; }
-  }
   .to-top { position: fixed; right: 14px; bottom: 18px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: var(--ink-sub); font-size: 18px; cursor: pointer; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
   .to-top.show { display: block; }
   button:focus-visible, a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
@@ -302,47 +226,20 @@
   .sr-glo { margin-top: 32px; padding: 20px; background: var(--paper-2); border-radius: 4px; }
   .sr-glo p { font-size: 14px; color: var(--ink-sub); }
   .sr-glo a { display: inline-block; margin-top: 6px; font-size: 15px; font-weight: 500; }
-  .gh-search-more { max-width: 600px; margin: 8px auto 0; font-size: 14px; }
-  .gh-search-more a { color: var(--link); font-weight: 500; }
+  /* 検索欄（目次の見出しの下と、検索結果の見出しの下） */
+  .page-search-box { margin-top: 18px; }
+  .page-search { display: flex; border: 1px solid #c4c4c4; border-radius: 4px; overflow: hidden; background: #fff; }
+  .page-search input { flex: 1; min-width: 0; border: 0; padding: 12px 14px; font-family: var(--font-body); font-size: 16px; }
+  .page-search button { flex-shrink: 0; border: 0; padding: 0 20px; background: var(--ink); color: #fff; font-family: var(--font-body); font-size: 15px; cursor: pointer; }
+  .page-search-note { font-size: 13px; color: var(--ink-faint); margin-top: 6px; }
+  .page-search-more { font-size: 14px; margin-top: 2px; }
+  .page-search-more a { font-weight: 500; }
 
   /* おすすめ作品診断の枠：診断ページができるまで非表示（表示に戻すときは、この1行を消す） */
   .cta { display: none !important; }
 </style>
 </head>
 <body>
-
-<header class="g-header" id="siteHeader">
-  <div class="gh-inner">
-    <a class="gh-logo" href="https://renaissance-media.jp/" target="_blank" rel="noopener"><img src="https://renaissance-media.jp/common/glo/images/logo.svg" width="190" height="40" alt="ゴールドライフオンライン"></a>
-    <nav class="gh-nav" aria-label="GLO のメニュー">
-      <a class="ranking" href="https://renaissance-media.jp/list/ranking" target="_blank" rel="noopener">ランキング</a>
-      <a class="latest" href="https://renaissance-media.jp/category/glo-articles" target="_blank" rel="noopener">新着記事</a>
-      <a class="book" href="https://renaissance-media.jp/ud/books" target="_blank" rel="noopener">書籍一覧</a>
-      <a class="event" href="https://renaissance-media.jp/category/event" target="_blank" rel="noopener">コンテスト一覧</a>
-    </nav>
-    <a class="gh-genkun" href="https://renaissance-media.jp/articles/-/15246" target="_blank" rel="noopener"><img src="https://renaissance-media.ismcdn.jp/common/glo/images/genkun/header-icon.svg" width="32" height="46" alt="">幻くんの部屋</a>
-    <button class="gh-menu-btn" id="ghMenuBtn" type="button" aria-expanded="false" aria-controls="ghMenu" aria-label="メニュー"></button>
-    <button class="gh-search-btn" id="ghSearchBtn" type="button" aria-expanded="false" aria-controls="ghSearch"><span>検索</span></button>
-  </div>
-  <div class="gh-panel" id="ghSearch" hidden>
-    <form class="gh-search" id="pageSearch" role="search">
-      <input type="search" name="q" placeholder="作品名・著者名・言葉で探す" aria-label="ジャンル一覧の作品を検索">
-      <button type="submit" aria-label="検索"></button>
-    </form>
-    <p class="gh-search-note">このページに載っている作品から、作品名・著者名・内容紹介で探します。<br>複数の言葉で調べる場合は、言葉ごとにスペースで区切ってください。</p>
-    <p class="gh-search-more"><a href="https://renaissance-media.jp/" id="gloMore" target="_blank" rel="noopener">GLO の記事全体から探す →</a></p>
-  </div>
-  <div class="gh-panel gh-menu" id="ghMenu" hidden>
-    <ul class="gh-menu-list">
-      <li><a href="https://renaissance-media.jp/list/ranking" target="_blank" rel="noopener">ランキング</a></li>
-      <li><a href="https://renaissance-media.jp/category/glo-articles" target="_blank" rel="noopener">新着記事</a></li>
-      <li><a href="https://renaissance-media.jp/ud/books" target="_blank" rel="noopener">書籍一覧</a></li>
-      <li><a href="https://renaissance-media.jp/category/event" target="_blank" rel="noopener">コンテスト一覧</a></li>
-      <li><a href="https://renaissance-media.jp/list/about" target="_blank" rel="noopener">このサイトについて</a></li>
-    </ul>
-    <a class="gh-genkun" href="https://renaissance-media.jp/articles/-/15246" target="_blank" rel="noopener"><img src="https://renaissance-media.ismcdn.jp/common/glo/images/genkun/header-icon.svg" width="32" height="46" alt="">幻くんの部屋</a>
-  </div>
-</header>
 
 <div class="container">
 
@@ -352,6 +249,11 @@
       <h1>ジャンル一覧</h1>
       <p class="lead">気になるジャンルを開くと、その中のテーマが並びます。</p>
       <p class="stats" id="stats"></p>
+      <div class="page-search-box">
+        <form class="page-search" role="search"><input type="search" name="q" placeholder="作品名・著者名・言葉で探す" aria-label="ジャンル一覧の作品を検索"><button type="submit">探す</button></form>
+        <p class="page-search-note">このページに載っている作品から、作品名・著者名・内容紹介で探します。</p>
+        <p class="page-search-more"><a class="glo-more" href="https://renaissance-media.jp/" target="_blank" rel="noopener">GLO の記事全体から探す →</a></p>
+      </div>
     </div>
 
     <ol class="toc" id="toc"></ol>
@@ -378,35 +280,16 @@
     <div class="list-head">
       <h2 class="list-title" id="srTitle"></h2>
       <p class="list-count" id="srCount"></p>
+      <div class="page-search-box">
+        <form class="page-search" role="search"><input type="search" name="q" placeholder="作品名・著者名・言葉で探す" aria-label="ジャンル一覧の作品を検索"><button type="submit">探す</button></form>
+        <p class="page-search-note">このページに載っている作品から、作品名・著者名・内容紹介で探します。</p>
+        <p class="page-search-more"><a class="glo-more" href="https://renaissance-media.jp/" target="_blank" rel="noopener">GLO の記事全体から探す →</a></p>
+      </div>
     </div>
     <div id="srBody"></div>
   </div>
 
 </div>
-<footer class="g-footer">
-  <div class="gf-main">
-    <a class="gf-logo" href="https://renaissance-media.jp/" target="_blank" rel="noopener"><img src="https://renaissance-media.ismcdn.jp/common/glo/images/logo.svg" width="419" height="88" alt="ゴールドライフオンライン" loading="lazy"></a>
-    <ul class="gf-sitemap">
-      <li><a href="https://renaissance-media.jp/list/about" target="_blank" rel="noopener">このサイトについて</a></li>
-      <li><a href="https://renaissance-media.jp/list/first" target="_blank" rel="noopener">はじめての方はこちら</a></li>
-      <li><a href="https://renaissance-media.jp/category/news" target="_blank" rel="noopener">お知らせ一覧</a></li>
-      <li><a href="https://renaissance-media.jp/list/author" target="_blank" rel="noopener">著者一覧</a></li>
-    </ul>
-    <ul class="gf-sns">
-      <li><a href="https://twitter.com/gentoshaglo?lang=ja" target="_blank" rel="noopener"><img src="https://renaissance-media.ismcdn.jp/common/glo/images/icon/sns-x.svg" width="19" height="25" alt="X" loading="lazy"></a></li>
-      <li><a href="https://www.facebook.com/gentoshaglo?locale=ja_JP" target="_blank" rel="noopener"><img src="https://renaissance-media.ismcdn.jp/common/glo/images/icon/sns-facebook.svg" width="23" height="25" alt="Facebook" loading="lazy"></a></li>
-      <li><a href="https://www.instagram.com/gentoshaglo/" target="_blank" rel="noopener"><img src="https://renaissance-media.ismcdn.jp/common/glo/images/icon/sns-instagram.svg" width="25" height="25" alt="Instagram" loading="lazy"></a></li>
-    </ul>
-    <ul class="gf-corp">
-      <li><a href="https://renaissance-media.jp/list/notice#terms" target="_blank" rel="noopener">免責事項</a></li>
-      <li><a href="https://renaissance-media.jp/list/notice#copyright" target="_blank" rel="noopener">著作権</a></li>
-      <li><a href="https://www.gentosha-mc.com/privacy/" target="_blank" rel="noopener">プライバシーポリシー</a></li>
-      <li><a href="https://renaissance-media.jp/list/media" target="_blank" rel="noopener">メディアの方</a></li>
-      <li><a href="https://renaissance-media.jp/list/company" target="_blank" rel="noopener">運営会社</a></li>
-    </ul>
-  </div>
-  <div class="gf-sub"><p class="gf-copy">Copyright © GENTOSHA MediaConsulting,inc. All rights reserved.</p></div>
-</footer>
 <button class="to-top" id="toTop" aria-label="ページの上へ">↑</button>
 <div class="drawer-dim" id="drawerDim"></div>
 <nav class="drawer" id="drawer" aria-label="ジャンル一覧">
@@ -477,7 +360,7 @@ toc.addEventListener('click', e => {
     li.classList.remove('open');
     li.querySelector('.toc-row').setAttribute('aria-expanded', false);
     // 閉じたジャンルの見出しが画面の上に隠れていたら、見える位置に戻す
-    if (li.getBoundingClientRect().top < 60) { li.scrollIntoView(); window.scrollBy(0, -60); }
+    if (li.getBoundingClientRect().top < 0) { li.scrollIntoView(); window.scrollBy(0, -16); }
     return;
   }
   const a = e.target.closest('a');
@@ -558,7 +441,7 @@ function goBack() {
   const li = toc.querySelector('li[data-i="' + gi + '"]');
   if (li) {
     li.classList.add('open'); li.querySelector('.toc-row').setAttribute('aria-expanded', true);
-    li.scrollIntoView(); window.scrollBy(0, -60);
+    li.scrollIntoView(); window.scrollBy(0, -16);
   } else window.scrollTo(0, 0);
 }
 
@@ -661,29 +544,7 @@ document.getElementById('drawerList').onclick = e => {
 };
 
 document.getElementById('crumbBack').onclick = e => { e.preventDefault(); goBack(); };
-/* ヘッダーの「検索」と「メニュー」：押すと下に開く。もう一度押すか Esc キーで閉じる */
-function setPanel(btnId, panelId, open) {
-  document.getElementById(btnId).setAttribute('aria-expanded', open);
-  document.getElementById(panelId).hidden = !open;
-}
-document.getElementById('ghSearchBtn').onclick = () => {
-  const open = document.getElementById('ghSearch').hidden;
-  setPanel('ghMenuBtn', 'ghMenu', false);
-  setPanel('ghSearchBtn', 'ghSearch', open);
-  if (open) document.querySelector('#ghSearch input').focus();
-};
-document.getElementById('ghMenuBtn').onclick = () => {
-  const open = document.getElementById('ghMenu').hidden;
-  setPanel('ghSearchBtn', 'ghSearch', false);
-  setPanel('ghMenuBtn', 'ghMenu', open);
-};
-document.addEventListener('keydown', e => {
-  if (e.key !== 'Escape') return;
-  setPanel('ghSearchBtn', 'ghSearch', false);
-  setPanel('ghMenuBtn', 'ghMenu', false);
-});
-
-/* ヘッダーの「検索」：このページの作品から、作品名・著者名・内容紹介・ジャンル名で探す
+/* ページの中の検索：このページの作品から、作品名・著者名・内容紹介・ジャンル名で探す
    - ひらがなとカタカナ、全角と半角は区別しない。スペースで区切ると、すべての言葉を含む作品
    - 主と副の2か所に載る作品は1つにまとめる。作品名に当たったもの → 著者名 → そのほかの順、同じなら読まれている順 */
 const toKana = s => (s || '').normalize('NFKC').toLowerCase().replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60));
@@ -717,6 +578,7 @@ function runSearch(q) {
   if (!srHits.length && !subHits.length) h += '<p class="sr-none">このページの作品には、「' + esc(q) + '」に当てはまるものが見つかりませんでした。<br>言葉を短くするか、ひらがな・カタカナを変えて、もう一度お試しください。</p>';
   h += '<div class="sr-glo"><p>' + (srHits.length ? 'ほかの記事も探したいときは' : 'GLO の記事全体からも探せます') + '</p><a href="' + gloSearchUrl(q) + '" target="_blank" rel="noopener">「' + esc(q) + '」を GLO の記事全体から探す →</a></div>';
   document.getElementById('srBody').innerHTML = h;
+  document.querySelectorAll('.page-search input').forEach(i => { i.value = q; });
   showScreen('search');
   window.scrollTo(0, 0);
 }
@@ -731,16 +593,12 @@ document.getElementById('srBody').onclick = e => {
   if (a) { e.preventDefault(); showList(GENRES[+a.dataset.g], a.dataset.s); }
 };
 document.getElementById('srBack').onclick = e => { e.preventDefault(); showScreen('top'); window.scrollTo(0, 0); };
-document.getElementById('pageSearch').onsubmit = e => {
-  e.preventDefault();
-  setPanel('ghSearchBtn', 'ghSearch', false);
-  runSearch(e.target.q.value);
-};
+document.querySelectorAll('.page-search').forEach(f => f.onsubmit = e => { e.preventDefault(); runSearch(f.q.value); });
 // GLO 本サイトの検索へ：入力した言葉のまま進む
 // 本サイトの検索ページは、言葉なしで開くと「ページが見つかりません」になるので、空のときは移らずに入力をうながす
 const gloSearchUrl = q => 'https://renaissance-media.jp/list/search?fulltext=' + encodeURIComponent(q);
-document.getElementById('gloMore').onclick = e => {
-  const input = document.querySelector('#pageSearch input');
+document.querySelectorAll('.glo-more').forEach(a => a.onclick = e => {
+  const input = a.closest('.page-search-box').querySelector('input');
   const q = input.value.trim();
   if (!q) {
     e.preventDefault();
@@ -748,8 +606,8 @@ document.getElementById('gloMore').onclick = e => {
     input.focus();
     return;
   }
-  e.currentTarget.href = gloSearchUrl(q);
-};
+  a.href = gloSearchUrl(q);
+});
 
 const toTop = document.getElementById('toTop');
 window.addEventListener('scroll', () => toTop.classList.toggle('show', window.scrollY > 800), { passive: true });
