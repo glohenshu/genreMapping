@@ -288,7 +288,11 @@
   }
 
   /* 検索の結果（ヘッダーの「検索」から。このページの作品だけを探す） */
-  .sr-where { font-size: 13px; color: var(--accent); margin-top: 2px; }
+  .sr-where { font-size: 13px; margin-top: 2px; }
+  .sr-where a { color: var(--link); text-decoration: underline; text-decoration-color: #b9c3d6; text-underline-offset: 3px; }
+  .sr-where a:hover { text-decoration-color: currentColor; }
+  .sr-sep { margin: 0 6px; color: var(--ink-faint); }
+  .sr-genre { display: block; font-size: 12px; color: var(--ink-faint); }
   .sr-section { margin-top: 28px; }
   .sr-label { font-family: var(--font-heading); font-size: 18px; font-weight: 600; letter-spacing: 1px; padding-bottom: 8px; border-bottom: 1px solid var(--ink); }
   .sr-label small { font-family: var(--font-body); font-size: 13px; font-weight: 400; color: var(--ink-faint); margin-left: 8px; }
@@ -687,9 +691,11 @@ const POOL = new Map();
 GENRES.forEach(g => g.subs.forEach(s => s.works.forEach(w => {
   let p = POOL.get(w.c);
   if (!p) { p = { w, places: [] }; POOL.set(w.c, p); }
-  p.places.push(g.name + ' › ' + s.name);
+  p.places.push({ g, s });
 })));
-POOL.forEach(p => { p.key = toKana([p.w.t, p.w.a, p.w.s, p.places.join(' ')].join(' ')); p.tk = toKana(p.w.t); p.ak = toKana(p.w.a); });
+POOL.forEach(p => { p.key = toKana([p.w.t, p.w.a, p.w.s, p.places.map(x => x.g.name + ' ' + x.s.name).join(' ')].join(' ')); p.tk = toKana(p.w.t); p.ak = toKana(p.w.a); });
+// 押すと、そのジャンルのページでその分類を開いて見せる
+const subLink = (g, s, inner) => '<a href="#" data-g="' + GENRES.indexOf(g) + '" data-s="' + s.code + '">' + inner + '</a>';
 const SR_FIRST = 20;
 let srHits = [];
 function runSearch(q) {
@@ -700,12 +706,12 @@ function runSearch(q) {
     .map(p => ({ p, rank: terms.some(t => p.tk.includes(t)) ? 0 : terms.some(t => p.ak.includes(t)) ? 1 : 2 }))
     .sort((x, y) => x.rank - y.rank || (y.p.w.pv || 0) - (x.p.w.pv || 0)).map(x => x.p);
   const subHits = [];
-  GENRES.forEach((g, gi) => g.subs.forEach(s => { const k = toKana(g.name + ' ' + s.name); if (terms.every(t => k.includes(t))) subHits.push({ g, gi, s }); }));
+  GENRES.forEach(g => g.subs.forEach(s => { const k = toKana(g.name + ' ' + s.name); if (terms.every(t => k.includes(t))) subHits.push({ g, s }); }));
   document.getElementById('srTitle').textContent = '「' + q + '」の検索結果';
   document.getElementById('srCount').textContent = srHits.length ? srHits.length.toLocaleString() + '作品' : '';
   let h = '';
   if (subHits.length) h += '<section class="sr-section"><h3 class="sr-label">小さなジャンル</h3><ul class="toc-subs sr-subs">' +
-    subHits.map(x => '<li><a href="#" data-g="' + x.gi + '" data-s="' + x.s.code + '">' + esc(x.g.name) + ' › ' + esc(x.s.name) + '<small>' + x.s.works.length + '作品</small><span class="go">見る →</span></a></li>').join('') + '</ul></section>';
+    subHits.map(x => '<li>' + subLink(x.g, x.s, '<span>' + esc(x.s.name) + '<span class="sr-genre">' + esc(x.g.name) + '</span></span><small>' + x.s.works.length + '作品</small><span class="go">見る →</span>') + '</li>').join('') + '</ul></section>';
   if (srHits.length) h += '<section class="sr-section"><h3 class="sr-label">作品<small>' + srHits.length.toLocaleString() + '作品</small></h3><ol class="entries" id="srList">' + srHits.slice(0, SR_FIRST).map(srEntry).join('') + '</ol>' +
     (srHits.length > SR_FIRST ? '<button class="btn-more" id="srMore">残り' + (srHits.length - SR_FIRST) + '作品を表示</button>' : '') + '</section>';
   if (!srHits.length && !subHits.length) h += '<p class="sr-none">このページの作品には、「' + esc(q) + '」に当てはまるものが見つかりませんでした。<br>言葉を短くするか、ひらがな・カタカナを変えて、もう一度お試しください。</p>';
@@ -714,9 +720,9 @@ function runSearch(q) {
   showScreen('search');
   window.scrollTo(0, 0);
 }
-// 結果の作品には、どのジャンルの作品かを添える
+// 結果の作品には、どの分類の作品かを添える（大きなジャンル名は長くなるので出さない）
 function srEntry(p) {
-  return entry(p.w).replace('<p class="entry-meta">', '<p class="sr-where">' + p.places.map(esc).join('／') + '</p><p class="entry-meta">');
+  return entry(p.w).replace('<p class="entry-meta">', '<p class="sr-where">' + p.places.map(x => subLink(x.g, x.s, esc(x.s.name))).join('<span class="sr-sep">／</span>') + '</p><p class="entry-meta">');
 }
 document.getElementById('srBody').onclick = e => {
   const m = e.target.closest('#srMore');
