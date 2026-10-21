@@ -112,7 +112,7 @@
 
   .sub-sec { margin-top: 32px; scroll-margin-top: 64px; }
   .sub-title { font-family: var(--font-heading); font-size: 20px; font-weight: 600; letter-spacing: 1px; padding-bottom: 8px; border-bottom: 1px solid var(--ink); }
-  .sub-title small { font-family: var(--font-body); font-size: 13px; font-weight: 400; color: var(--ink-faint); margin-left: 8px; }
+  .sub-title small { font-family: var(--font-body); font-size: 13px; font-weight: 400; color: var(--ink-faint); margin-left: 8px; white-space: nowrap; }
   .entries { list-style: none; }
   .entry { display: flex; gap: 14px; padding: 18px 0; border-bottom: 1px solid var(--line); }
   .entry-cover { width: 64px; height: 94px; flex-shrink: 0; background: var(--paper-2); border: 1px solid var(--line); display: block; }
@@ -177,8 +177,8 @@
   }
 
   /* ジャンル一覧（ジャンルのページの右上から、右に出るサイドバー） */
-  .list-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 20px; }
-  .list-top .btn-back { margin-top: 0; }
+  /* ジャンルのページの右上：「目次に戻る」と「ジャンル一覧」を同じ見た目で並べる */
+  .list-top { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 20px; }
   .genre-menu { background: #fff; border: 1px solid var(--ink); border-radius: 4px; padding: 4px 12px; font-family: var(--font-body); font-size: 13px; color: var(--ink); cursor: pointer; white-space: nowrap; }
   .genre-menu:hover { background: var(--ink); color: #fff; }
   .drawer-dim { position: fixed; inset: 0; z-index: 50; background: rgba(20, 20, 20, 0.4); opacity: 0; pointer-events: none; transition: opacity .2s; }
@@ -252,10 +252,10 @@
   </div>
 
   <div id="list" class="screen">
-    <div class="list-top"><button class="btn-back" onclick="goBack()">← 目次に戻る</button><button class="genre-menu" id="genreMenu" type="button">☰ ジャンル一覧</button></div>
+    <div class="list-top"><button class="genre-menu" type="button" onclick="goBack()">← 目次に戻る</button><button class="genre-menu" id="genreMenu" type="button">☰ ジャンル一覧</button></div>
     <div class="list-head">
       <p class="list-no" id="listNo"></p>
-      <div class="list-title-row"><h2 class="list-title" id="listTitle"></h2><button class="list-close" type="button" onclick="goBack()">目次に戻る ✕</button></div>
+      <h2 class="list-title" id="listTitle"></h2>
       <p class="list-desc" id="listDesc"></p>
       <div class="list-count-row"><p class="list-count" id="listCount"></p><div class="view-switch" id="viewSwitch" role="group" aria-label="表示"><button type="button" data-v="list" aria-pressed="true">☰ リスト</button><button type="button" data-v="block" aria-pressed="false">▦ ブロック</button></div></div>
     </div>
