@@ -178,7 +178,12 @@
 
   /* ジャンル一覧（ジャンルのページの右上から、右に出るサイドバー） */
   /* ジャンルのページの右上：「目次に戻る」と「ジャンル一覧」を同じ見た目で並べる */
-  .list-top { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 20px; }
+  .list-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 20px; }
+  /* 左上の現在地（パンくず）：「ジャンル一覧」を押すと目次に戻る */
+  .crumb { font-size: 13px; color: var(--ink-faint); min-width: 0; }
+  .crumb a { color: var(--link); text-decoration: none; }
+  .crumb a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .crumb-sep { margin: 0 8px; }
   .genre-menu { background: #fff; border: 1px solid var(--ink); border-radius: 4px; padding: 4px 12px; font-family: var(--font-body); font-size: 13px; color: var(--ink); cursor: pointer; white-space: nowrap; }
   .genre-menu:hover { background: var(--ink); color: #fff; }
   /* ☰ は枠なしで、ページになじませる */
@@ -255,7 +260,7 @@
   </div>
 
   <div id="list" class="screen">
-    <div class="list-top"><button class="genre-menu" type="button" onclick="goBack()">← 目次に戻る</button><button class="genre-menu genre-menu-icon" id="genreMenu" type="button" aria-label="ジャンル一覧" title="ジャンル一覧">☰</button></div>
+    <div class="list-top"><nav class="crumb" aria-label="現在地"><a href="#" id="crumbBack">ジャンル一覧</a><span class="crumb-sep" aria-hidden="true">›</span><span id="crumbNow"></span></nav><button class="genre-menu genre-menu-icon" id="genreMenu" type="button" aria-label="ジャンル一覧" title="ジャンル一覧">☰</button></div>
     <div class="list-head">
       <p class="list-no" id="listNo"></p>
       <h2 class="list-title" id="listTitle"></h2>
@@ -372,6 +377,7 @@ function showList(g, jumpSub, keepScroll) {
   const gi = GENRES.indexOf(g);
   document.getElementById('listNo').textContent = no(gi);
   document.getElementById('listTitle').textContent = g.name;
+  document.getElementById('crumbNow').textContent = g.name;
   document.getElementById('listDesc').textContent = g.desc;
   document.getElementById('listCount').textContent = g.count.toLocaleString() + '作品';
   const box = document.getElementById('listSubs');
@@ -521,6 +527,7 @@ document.getElementById('drawerList').onclick = e => {
   if (g !== curList) showList(g);
 };
 
+document.getElementById('crumbBack').onclick = e => { e.preventDefault(); goBack(); };
 const toTop = document.getElementById('toTop');
 window.addEventListener('scroll', () => toTop.classList.toggle('show', window.scrollY > 800), { passive: true });
 toTop.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
