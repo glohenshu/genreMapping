@@ -101,9 +101,7 @@
   .cta a { display: inline-block; margin-top: 6px; font-weight: 500; font-size: 15px; }
 
   /* ジャンルの作品一覧 */
-  .btn-back { margin-top: 20px; background: none; border: 0; font-size: 14px; color: var(--link); cursor: pointer; padding: 6px 0; }
   .list-head { padding: 14px 0 20px; border-bottom: 2px solid var(--ink); }
-  .list-no { font-size: 13px; color: var(--accent); }
   .list-title { font-family: var(--font-heading); font-size: 28px; font-weight: 600; letter-spacing: 2px; line-height: 1.5; }
   .list-desc { font-size: 15px; color: var(--ink-sub); margin-top: 8px; }
   .list-count { font-size: 13px; color: var(--ink-faint); margin-top: 6px; }
@@ -260,13 +258,11 @@
   <div id="list" class="screen">
     <div class="list-top"><nav class="crumb" aria-label="現在地"><a href="#" id="crumbBack">ジャンル一覧</a><span class="crumb-sep" aria-hidden="true">›</span><span id="crumbNow"></span></nav><button class="genre-menu genre-menu-icon" id="genreMenu" type="button" aria-label="ジャンル一覧" title="ジャンル一覧">☰</button></div>
     <div class="list-head">
-      <p class="list-no" id="listNo" aria-hidden="true"></p>
       <h2 class="list-title" id="listTitle"></h2>
       <p class="list-desc" id="listDesc"></p>
       <div class="list-count-row"><p class="list-count" id="listCount"></p><div class="view-switch" id="viewSwitch" role="group" aria-label="表示"><button type="button" data-v="list" aria-pressed="true">☰ リスト</button><button type="button" data-v="block" aria-pressed="false">▦ ブロック</button></div></div>
     </div>
     <div id="listSubs"></div>
-    <button class="btn-back" onclick="goBack()">← 目次に戻る</button>
     <div class="footer"><a href="https://renaissance-media.jp/" target="_blank" rel="noopener">© ゴールドライフオンライン</a></div>
   </div>
 
@@ -373,8 +369,6 @@ function setShut(sec, shut) {
 }
 function showList(g, jumpSub, keepScroll) {
   curList = g;
-  const gi = GENRES.indexOf(g);
-  document.getElementById('listNo').textContent = no(gi);
   document.getElementById('listTitle').textContent = g.name;
   document.getElementById('crumbNow').textContent = g.name;
   document.getElementById('listDesc').textContent = g.desc;
