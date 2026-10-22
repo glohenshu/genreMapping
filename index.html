@@ -38,7 +38,6 @@
 
   /* トップ */
   .masthead { padding: 40px 0 28px; border-bottom: 2px solid var(--ink); margin-bottom: 8px; }
-  .eyebrow { font-size: 11px; letter-spacing: 4px; color: var(--accent); margin-bottom: 8px; }
   h1 { font-family: var(--font-heading); font-size: 30px; font-weight: 600; letter-spacing: 2px; line-height: 1.5; }
   .lead { font-size: 15px; color: var(--ink-sub); margin-top: 12px; }
   .stats { font-size: 13px; color: var(--ink-faint); margin-top: 6px; }
@@ -227,7 +226,6 @@
   .page-search { display: flex; border: 1px solid #c4c4c4; border-radius: 4px; overflow: hidden; background: #fff; }
   .page-search input { flex: 1; min-width: 0; border: 0; padding: 12px 14px; font-family: var(--font-body); font-size: 16px; }
   .page-search button { flex-shrink: 0; border: 0; padding: 0 20px; background: var(--ink); color: #fff; font-family: var(--font-body); font-size: 15px; cursor: pointer; }
-  .page-search-note { font-size: 13px; color: var(--ink-faint); margin-top: 6px; }
   /* 目次の上の検索欄はたたんでおく。開け閉めの印は目次と同じ＋と− */
   .page-search-toggle { display: inline-flex; align-items: center; gap: 8px; list-style: none; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--link); }
   .page-search-toggle::-webkit-details-marker { display: none; }
@@ -256,14 +254,12 @@
 
   <div id="top" class="screen active">
     <div class="masthead">
-      <p class="eyebrow">GOLD LIFE ONLINE</p>
       <h1>ジャンル一覧</h1>
       <p class="lead">ジャンルを開くと、テーマごとに作品を探せます。</p>
       <p class="stats" id="stats"></p>
       <details class="page-search-box" id="searchFold">
         <summary class="page-search-toggle">作品を検索する</summary>
         <form class="page-search" role="search"><input type="search" name="q" placeholder="作品名・著者名・言葉で探す" aria-label="ジャンル一覧の作品を検索"><button type="submit">探す</button></form>
-        <p class="page-search-note">このページに載っている作品から、作品名・著者名・内容紹介で探します。</p>
       </details>
     </div>
 
