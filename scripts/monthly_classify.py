@@ -328,6 +328,7 @@ def main():
     guide, labels, majors = load_skill()
     load_settings()
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    sys.dont_write_bytecode = True  # scripts/ に __pycache__ を作らない
     import build_data  # 環境変数を入れたあとで読む（KINTONE_DOMAIN を読み込み時に使うため）
 
     rows_402 = build_data.fetch_all("402", FIELDS_402)
