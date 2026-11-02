@@ -48,6 +48,8 @@ CSV_COLUMNS = ["レコード番号", "カテゴリコード", "作品キー", "�
 CSV_HEADERS = {"小分類_主": "小分類（主）", "小分類_副": "小分類（副）", "判定理由": "判定の理由",
                "控え_メインジャンル": "控え：メインジャンル（判定時）", "控え_ジャンル内容": "控え：ジャンル（内容）（判定時）",
                "控え_内容紹介": "控え：内容紹介（判定時）"}
+# ページに載せない小分類。ここに手動で入れた作品は、内容が変わっても再判定しない
+HIDDEN_CODES = ("S90", "S91", "S92", "S99")
 # ［人気連載ピックアップ］などの括弧書き。再掲の作品を、もとの作品と見分けるのに使う
 PICKUP_MARK = re.compile(r"[［\[【][^］\]】]*[］\]】]")
 
@@ -162,7 +164,7 @@ def has_info(a):
 
 def pick_targets(rows_402, rows_507):
     by_key = {r.get("作品キー"): r for r in rows_507 if r.get("作品キー")}
-    targets, manual, no_info = [], [], []
+    targets, kept, no_info = [], [], []
     for a in rows_402:
         key = a.get("カテゴリID")
         if not key:
@@ -174,11 +176,12 @@ def pick_targets(rows_402, rows_507):
             else:
                 no_info.append(a)
         elif is_changed(a, b):
-            if b.get("判定区分") == "手動修正":
-                manual.append(a)
+            manual = b.get("判定区分") == "手動修正"
+            if manual and (b.get("小分類_主") or "")[:3] in HIDDEN_CODES:
+                kept.append(a)
             else:
-                targets.append({"a": a, "b": b, "kind": "内容変更による再判定"})
-    return targets, manual, no_info
+                targets.append({"a": a, "b": b, "kind": "内容変更による再判定", "was_manual": manual})
+    return targets, kept, no_info
 
 
 def copy_from_original(target, rows_507):
@@ -280,7 +283,7 @@ def line_of(a):
     return f"  {a.get('カテゴリID')}　{a.get('書籍タイトル') or ''}（{a.get('著者名') or ''}）"
 
 
-def build_report(month, rows, failed, manual, no_info, csv_path):
+def build_report(month, rows, failed, rejudged, kept, no_info, csv_path):
     new = sum(r["判定区分"] == "新規" for r in rows)
     s99 = [r for r in rows if r["小分類_主"].startswith("S99")]
     out = [f"連載分類の月次更新（{month}）", "", f"新規 {new}件／内容変更による再判定 {len(rows) - new}件"]
@@ -290,7 +293,9 @@ def build_report(month, rows, failed, manual, no_info, csv_path):
         out.extend(["", f"■ {title}（{len(lines)}件）"] + (lines or ["  ありません"]))
     section("確かめてください：S99（要確認）になった作品", [f"  {r['カテゴリコード']}　{r['書籍タイトル（参考・取り込み不要）']}" for r in s99])
     section("確かめてください：判定できず S99 にした作品", [line_of(a) for a in failed])
-    section("手動修正済みで内容が変わった作品（CSV には入れていません。必要なら 507 で直します）", [line_of(a) for a in manual])
+    section("確かめてください：手動で直した分類を再判定した作品（取り込むと手動の分類が上書きされます）",
+            [f"  {r['カテゴリコード']}　{r['書籍タイトル（参考・取り込み不要）']}：{t['b'].get('小分類_主')} → {r['小分類_主']}" for t, r in rejudged])
+    section("ページに載せない小分類（" + "・".join(HIDDEN_CODES) + "）に手動で入れた作品で、内容が変わったもの（CSV には入れていません）", [line_of(a) for a in kept])
     section("402 に情報がまだ入っていない作品（今回は分類しません）", [line_of(a) for a in no_info])
     out.extend(["", "■ 判定の一覧"] + [f"  {r['カテゴリコード']}　{r['書籍タイトル（参考・取り込み不要）']} → {r['小分類_主']}"
                                      + (f" ／副 {r['小分類_副']}" if r["小分類_副"] else "") + f"（{r['判定理由']}）" for r in rows])
@@ -338,8 +343,9 @@ def main():
 
     rows_402 = build_data.fetch_all("402", FIELDS_402)
     rows_507 = build_data.fetch_all("507", FIELDS_507)
-    targets, manual, no_info = pick_targets(rows_402, rows_507)
-    print(f"分類する作品：{len(targets)}件／手動修正済みで内容が変わった作品：{len(manual)}件／情報がまだ無い作品：{len(no_info)}件\n")
+    targets, kept, no_info = pick_targets(rows_402, rows_507)
+    print(f"分類する作品：{len(targets)}件（うち手動で直した作品 {sum(t.get('was_manual', False) for t in targets)}件）"
+          f"／載せない小分類に手動で入れた作品で内容が変わったもの：{len(kept)}件／情報がまだ無い作品：{len(no_info)}件\n")
 
     results, ask = {}, []
     for t in targets:
@@ -359,7 +365,8 @@ def main():
     csv_path = os.path.join(OUT, f"GLO連載分類_更新_{month}.csv")
     if rows:
         write_csv(csv_path, rows)
-    report = build_report(month, rows, failed, manual, no_info, csv_path)
+    rejudged = [(t, r) for t, r in zip(targets, rows) if t.get("was_manual")]
+    report = build_report(month, rows, failed, rejudged, kept, no_info, csv_path)
     report_path = os.path.join(OUT, f"GLO連載分類_更新_{month}_報告.txt")
     open(report_path, "w", encoding="utf-8-sig", newline="\r\n").write(report)
     print("\n" + report)
