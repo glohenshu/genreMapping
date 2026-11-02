@@ -91,6 +91,17 @@ def fetch_all(app, fields, query="", token_name=None):
     return rows
 
 
+# ---------------------------------------------------------------- 確認リスト
+def pending_lines(pending):
+    """分類待ちの作品の表。公開前の作品も混ざり、リポジトリは誰でも読めるので、作品名と著者は書かない。"""
+    lines = ["507に登録が無いため、ページに載っていない作品です。毎月の分類作業（`docs/classification.md`）で分類してください。"
+             "公開前の作品も混ざるので、作品名と著者は書いていません（連載コードで402を見てください）。", ""]
+    if not pending:
+        return lines + ["ありません。"]
+    lines += ["| 連載コード | 連載ステータス |", "|---|---|"]
+    return lines + [f"| {r['_c']} | {nfkc(r.get('連載ステータス')).replace('|', '｜')} |" for r in sorted(pending, key=lambda r: r["_c"])]
+
+
 # ---------------------------------------------------------------- 小分類の表示設定
 def read_hidden():
     """表示設定アプリで「表示しない」にした小分類コードの集合。アプリが未設定なら None。"""
@@ -447,15 +458,7 @@ def main():
         lines += [f"| {c} | {gn} | {sname} | {n} |" for c, gn, sname, n in hidden_rows]
     else:
         lines.append("ありません。" if hidden is not None else "表示設定アプリが未設定のため、すべて表示しています。")
-    lines += ["", "## 分類待ちの作品", "",
-              "507に登録が無いため、ページに載っていない作品です。毎月の分類作業（`docs/classification.md`）で分類してください。", ""]
-    if pending:
-        cell = lambda s: nfkc(s).replace("|", "｜")
-        lines += ["| 作品名 | 著者 | 連載コード | 連載ステータス |", "|---|---|---|---|"]
-        lines += [f"| {cell(r.get('書籍タイトル'))} | {cell(r.get('著者名'))} | {r['_c']} | {cell(r.get('連載ステータス'))} |"
-                  for r in sorted(pending, key=lambda r: r["_c"])]
-    else:
-        lines.append("ありません。")
+    lines += ["", "## 分類待ちの作品", ""] + pending_lines(pending)
     lines += ["", "## 書影の確認が必要な作品", ""]
     if check_cover:
         lines += ["| 作品名 | 著者 | 連載コード | 状況 |", "|---|---|---|---|"]
